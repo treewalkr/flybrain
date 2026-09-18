@@ -1,5 +1,7 @@
 {
-  "iters": 20, "pop": 64, "elites": 10, "eps": 2, "seed": 0,
+  "iters": 24, "pop": 64, "elites": 10, "eps": 3, "seed": 0,
   "use_sensory": true, "sensory_gain": 1.0, "n_substeps": 4, "gain": 1.0,
-  "dn_topk": 128, "graph": "data/fly/brain_circuit.npz"
+  "dn_topk": 128, "sigma_decay": 0.9, "sigma_floor": 0.02,
+  "train_balls": 12,
+  "graph": "data/fly/brain_circuit.npz"
 }

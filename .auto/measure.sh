@@ -22,6 +22,8 @@ mu, sigma, hist = train(
     eps=cfg.get('eps', 1), seed=cfg.get('seed', 0), use_sensory=cfg.get('use_sensory', True),
     sensory_gain=cfg.get('sensory_gain', 1.0), n_substeps=cfg.get('n_substeps', 4),
     gain=cfg.get('gain', 1.0), dn_topk=cfg.get('dn_topk'), quiet=True,
+    sigma_decay=cfg.get('sigma_decay', 0.9), sigma_floor=cfg.get('sigma_floor', 0.02),
+    train_balls=cfg.get('train_balls', 20),
     out=Path('data/runs/measure'))
 train_s = time.time() - t0
 
