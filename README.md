@@ -40,7 +40,11 @@ nonlinear feature map from senses to descending neurons.
 | policy | eval reward (frozen seeds) | catch rate |
 |---|---:|---:|
 | random | ≈ −6.7 | 33% |
-| CEM readout (this repo's recipe) | **+2.3** | **56%** |
+| CEM readout, across training seeds | −3.6 … +2.3 | 41–56% |
+| CEM readout, best artifact (`data/runs/best`) | **+2.3** | **56%** |
+
+Catch rate is the stable signal (always well above chance); episode reward carries
+the trajectory variance of a small-sample CEM (see `.auto/prompt.md`).
 
 Failure modes that did **not** work (documented in `.auto/prompt.md`): dopamine/RPE
 plasticity (also the user's earlier flappy-bird attempt and FlyPong's published

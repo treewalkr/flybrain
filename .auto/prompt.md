@@ -78,6 +78,11 @@ Dead ends (do not revisit without changed assumptions):
 
 Caveats:
 - Trajectory (seed) variance is ±2–3 reward — single A/B runs are weak evidence for
-  small deltas; strong effects (≥3) are trustworthy
-- Machine load varies wildly (load avg 4–15); wall time 12–50 min, results unaffected
+  small deltas; strong effects (≥3) are trustworthy. Across seeds the champion
+  recipe scores −3.6…+2.3 reward, 41–56% catch (chance 33%): catch rate is the
+  stable metric; seed replicas logged as informational discards (runs 19, 33)
+- Machine load varies wildly (load avg 4–28); wall time 12–50 min, results unaffected
 - use_sensory=True keeps a direct sensory→readout path; DN-only ablation untested (ideas.md)
+- Closed directions (do not reopen): elitism, cross-seed averaging, feature scaling,
+  circuit shrink, substeps<4, pop shrink, sigma_decay 0.85, dn_topk 512,
+  gain 1.4, sensory_gain, tau 10ms, n_sensory 600, min-fitness, elites 16, iters 60
