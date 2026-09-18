@@ -12,7 +12,7 @@ import time, json
 from pathlib import Path
 import numpy as np
 from flybrain.train import train
-from flybrain.brain import BatchedBrain
+from flybrain.brain import BrainModel as BatchedBrain
 from flybrain.eval_util import eval_run
 
 cfg = json.loads(Path('.auto/config.json').read_text()) if Path('.auto/config.json').exists() else {}
@@ -23,7 +23,7 @@ mu, sigma, hist = train(
     sensory_gain=cfg.get('sensory_gain', 1.0), n_substeps=cfg.get('n_substeps', 4),
     gain=cfg.get('gain', 1.0), dn_topk=cfg.get('dn_topk'), quiet=True,
     sigma_decay=cfg.get('sigma_decay', 0.9), sigma_floor=cfg.get('sigma_floor', 0.02),
-    train_balls=cfg.get('train_balls', 20),
+    train_balls=cfg.get("train_balls", 20), elitism=cfg.get("elitism", False),
     out=Path('data/runs/measure'))
 train_s = time.time() - t0
 
@@ -32,7 +32,7 @@ train_fit = hist[-1]['elite_mean'] if hist else 0.0
 
 # held-out evaluation on FROZEN eval seeds
 import numpy as np
-from flybrain.brain import BatchedBrain
+from flybrain.brain import BrainModel as BatchedBrain
 from flybrain.eval_util import eval_run
 cfg2 = dict(cfg)
 cfg2['feat_idx_path'] = 'data/runs/measure/feat_idx.npy'
