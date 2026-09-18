@@ -33,7 +33,6 @@ def calibration_rollout(brain: "BatchedBrain", W_s: np.ndarray, sensory_gain: fl
     Returns feature matrix (n_neurons, steps*batch) of rates collected per decision."""
     from flybrain.game import CatchEnv, observation
     rng = np.random.default_rng(seed)
-    device = brain.device
     brain.init_batch(batch)
     brain.reset_batch()
     envs = [CatchEnv(int(rng.integers(0, 8000))) for _ in range(batch)]
@@ -81,7 +80,6 @@ def episode_fitness(brain: BatchedBrain, W_s: np.ndarray, policies: np.ndarray,
                     n_substeps: int, train_balls: int = 20) -> np.ndarray:
     """One episode per policy, all P in parallel. Returns per-policy total reward."""
     P = len(policies)
-    device = brain.device
     envs = [CatchEnv(s, balls=train_balls) for s in seeds]
     brain.reset_batch()
     rewards = np.zeros(P, np.float64)
@@ -111,7 +109,6 @@ def train(iters: int = 16, pop: int = 64, elites: int = 8, eps: int = 2, seed: i
     graph = dict(np.load(graph_path or CIRCUIT_PATH, allow_pickle=True))
     brain = BatchedBrain(graph, dt=0.005, gain=gain)
     brain.init_batch(pop)
-    device = brain.device
     W_s = make_sensory_projection(len(brain.sensory_idx), OBS_DIM)
     feat_idx = select_features(brain, W_s, use_sensory, sensory_gain, n_substeps, dn_topk)
     brain.init_batch(pop + 1 if elitism else pop)
