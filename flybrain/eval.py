@@ -15,9 +15,8 @@ import json
 from pathlib import Path
 
 import numpy as np
-import torch
 
-from flybrain.brain import BatchedBrain
+from flybrain.brain import BrainModel as BatchedBrain
 from flybrain.eval_util import eval_run
 
 
