@@ -3,7 +3,8 @@
 > A real fruit-fly brain (MaleCNS v1.0 connectome) that trains to play a game,
 > with real-time 3D brain-activity rendering. Autoresearch-optimized.
 >
-> **Status**: not started — blocked on plan mode. This document is the full handoff.
+> **Status**: COMPLETE (see README.md). Best: eval_reward +2.31, 56% catch (chance 33%),
+> frozen-eval protocol. Demo video: `flybrain.play` -> game + live 3D brain activity.
 
 ## 1. Objective
 
