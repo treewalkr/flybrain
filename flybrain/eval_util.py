@@ -18,9 +18,12 @@ def eval_run(brain: BatchedBrain, params: np.ndarray, cfg: dict, seeds=None, bat
     device = brain.device
     W_s = make_sensory_projection(int(brain.sensory_idx.numel()), OBS_DIM).to(device)
     feat_idx = torch.cat([brain.dn_idx, brain.sensory_idx]) if cfg.get("use_sensory", True) else brain.dn_idx
+    if cfg.get("feat_idx_path"):
+        feat_idx = torch.from_numpy(np.load(cfg["feat_idx_path"]).astype(np.int64)).to(device)
     n_feat = int(feat_idx.numel())
     P = params.reshape(1, N_ACTIONS, n_feat)
     total_reward, catches, n = 0.0, 0, 0
+    act_count = np.zeros(3, np.int64)
     for c0 in range(0, len(seeds), batch):
         chunk = seeds[c0:c0 + batch]
         brain.init_batch(len(chunk))
@@ -36,6 +39,8 @@ def eval_run(brain: BatchedBrain, params: np.ndarray, cfg: dict, seeds=None, bat
             brain.step_batch(cfg.get("n_substeps", 4))
             feats = brain.r[feat_idx].detach().cpu().numpy().T
             acts = batch_actions(reps, feats)
+            for aa in acts:
+                act_count[int(aa)] += 1
             done_all = True
             for p, e in enumerate(envs):
                 r, done = e.step(int(acts[p]))
@@ -48,5 +53,7 @@ def eval_run(brain: BatchedBrain, params: np.ndarray, cfg: dict, seeds=None, bat
         catches += sum(e.catches for e in envs)
         n += len(chunk)
     balls_per_ep = envs[0].balls
+    act_frac = (act_count / act_count.sum()).tolist()
     return {"eval_reward": total_reward / n, "catches": catches / n,
-            "catch_rate": catches / (n * balls_per_ep), "episodes": n}
+            "catch_rate": catches / (n * balls_per_ep), "episodes": n,
+            "act_l": act_frac[0], "act_s": act_frac[1], "act_r": act_frac[2]}

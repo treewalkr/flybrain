@@ -27,6 +27,50 @@ from flybrain.readout import make_sensory_projection
 N_ACTIONS = 3
 
 
+def calibration_rollout(brain: "BatchedBrain", W_s: torch.Tensor, sensory_gain: float,
+                        n_substeps: int, steps: int = 120, batch: int = 16,
+                        seed: int = 123) -> np.ndarray:
+    """Seeded random-action rollout (training-stream seeds only, NOT eval seeds).
+    Returns feature matrix (n_neurons, steps*batch) of rates collected per decision."""
+    from flybrain.game import CatchEnv, observation
+    rng = np.random.default_rng(seed)
+    device = brain.device
+    brain.init_batch(batch)
+    brain.reset_batch()
+    envs = [CatchEnv(int(rng.integers(0, 8000))) for _ in range(batch)]
+    cols = []
+    obs = np.stack([observation(e) for e in envs])
+    for _ in range(steps):
+        O = torch.from_numpy(obs).to(device)
+        S = torch.relu(W_s @ O.T) * sensory_gain
+        brain.clamp_sensory_batch(S)
+        brain.step_batch(n_substeps)
+        cols.append(brain.r.detach().cpu().numpy())          # (n, batch)
+        for e in envs:
+            e.step(int(rng.integers(0, 3)))
+        obs = np.stack([observation(e) for e in envs])
+    brain.init_batch(1)
+    return np.concatenate(cols, axis=1)                      # (n, steps*batch)
+
+
+def select_features(brain: "BatchedBrain", W_s: torch.Tensor, use_sensory: bool,
+                    sensory_gain: float, n_substeps: int, dn_topk: int | None,
+                    seed: int = 123) -> torch.Tensor:
+    """Feature index: top-k DN by rate variance over the calibration rollout + sensory."""
+    if dn_topk is not None and int(brain.dn_idx.numel()) > dn_topk:
+        R = calibration_rollout(brain, W_s, sensory_gain, n_substeps, seed=seed)
+        var = R.var(axis=1)
+        dn = brain.dn_idx.detach().cpu().numpy()
+        top = dn[np.argsort(var[dn])[::-1][:dn_topk]]
+        parts = [np.sort(top)]
+    else:
+        parts = [brain.dn_idx.detach().cpu().numpy()]
+    if use_sensory:
+        parts.append(brain.sensory_idx.detach().cpu().numpy())
+    idx = np.unique(np.concatenate(parts))
+    return torch.from_numpy(idx.astype(np.int64)).to(brain.device)
+
+
 def batch_actions(policies: np.ndarray, F: np.ndarray) -> np.ndarray:
     """policies (P, A*n_feat), features (P, n_feat) -> actions (P,)."""
     P, A, n_feat = len(policies), N_ACTIONS, F.shape[1]
@@ -63,14 +107,15 @@ def episode_fitness(brain: BatchedBrain, W_s: torch.Tensor, policies: np.ndarray
 
 def train(iters: int = 16, pop: int = 64, elites: int = 8, eps: int = 2, seed: int = 0,
           use_sensory: bool = True, sensory_gain: float = 1.0, n_substeps: int = 4,
-          gain: float = 1.0, out: Path | None = None, graph_path: Path | None = None,
-          quiet: bool = False):
+          gain: float = 1.0, dn_topk: int | None = 128, out: Path | None = None,
+          graph_path: Path | None = None, quiet: bool = False):
     graph = dict(np.load(graph_path or CIRCUIT_PATH, allow_pickle=True))
     brain = BatchedBrain(graph, dt=0.005, gain=gain)
     brain.init_batch(pop)
     device = brain.device
     W_s = make_sensory_projection(int(brain.sensory_idx.numel()), OBS_DIM).to(device)
-    feat_idx = torch.cat([brain.dn_idx, brain.sensory_idx]) if use_sensory else brain.dn_idx
+    feat_idx = select_features(brain, W_s, use_sensory, sensory_gain, n_substeps, dn_topk)
+    brain.init_batch(pop)
     n_feat = int(feat_idx.numel())
     rng = np.random.default_rng(seed)
     K = n_feat * N_ACTIONS
@@ -100,10 +145,11 @@ def train(iters: int = 16, pop: int = 64, elites: int = 8, eps: int = 2, seed: i
         out.mkdir(parents=True, exist_ok=True)
         np.save(out / "mu.npy", mu)
         np.save(out / "sigma.npy", sigma)
+        np.save(out / "feat_idx.npy", feat_idx.detach().cpu().numpy())
         (out / "history.json").write_text(json.dumps(history, indent=1))
         (out / "config.json").write_text(json.dumps(
             {"use_sensory": use_sensory, "sensory_gain": sensory_gain, "n_substeps": n_substeps,
-             "gain": gain, "pop": pop, "elites": elites, "eps": eps, "iters": iters, "seed": seed,
+             "gain": gain, "dn_topk": dn_topk, "pop": pop, "elites": elites, "eps": eps, "iters": iters, "seed": seed,
              "n_feat": n_feat, "n_dn": int(brain.dn_idx.numel()),
              "n_sensory": int(brain.sensory_idx.numel()), "graph": str(graph_path or CIRCUIT_PATH),
              "device": str(brain.device)}, indent=1))
@@ -121,12 +167,14 @@ def main() -> int:
     p.add_argument("--sensory-gain", type=float, default=1.0)
     p.add_argument("--substeps", type=int, default=4)
     p.add_argument("--gain", type=float, default=1.0)
+    p.add_argument("--dn-topk", type=int, default=128)
+    p.add_argument("--dn-all", action="store_true", help="read out from every DN")
     p.add_argument("--graph", type=Path, default=None)
     p.add_argument("--out", type=Path, default=RUNS_DIR / "cem_v0")
     a = p.parse_args()
     train(iters=a.iters, pop=a.pop, elites=a.elites, eps=a.eps, seed=a.seed,
           use_sensory=not a.no_sensory, sensory_gain=a.sensory_gain, n_substeps=a.substeps,
-          gain=a.gain, out=a.out, graph_path=a.graph)
+          gain=a.gain, dn_topk=None if a.dn_all else a.dn_topk, out=a.out, graph_path=a.graph)
     return 0
 
 
