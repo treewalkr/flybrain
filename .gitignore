@@ -5,3 +5,4 @@ __pycache__/
 .auto/
 *.mp4
 .DS_Store
+ref-projects/
