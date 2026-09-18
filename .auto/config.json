@@ -1,0 +1,1 @@
+{"iters": 24, "pop": 48, "elites": 8, "eps": 1, "seed": 0, "use_sensory": true, "sensory_gain": 1.0, "n_substeps": 4, "gain": 1.0, "graph": "data/fly/brain_circuit.npz"}
