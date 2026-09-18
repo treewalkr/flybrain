@@ -108,7 +108,8 @@ def episode_fitness(brain: BatchedBrain, W_s: torch.Tensor, policies: np.ndarray
 def train(iters: int = 16, pop: int = 64, elites: int = 8, eps: int = 2, seed: int = 0,
           use_sensory: bool = True, sensory_gain: float = 1.0, n_substeps: int = 4,
           gain: float = 1.0, dn_topk: int | None = 128, sigma_decay: float = 0.9,
-          sigma_floor: float = 0.02, train_balls: int = 20, out: Path | None = None,
+          sigma_floor: float = 0.02, train_balls: int = 20, elitism: bool = False,
+          out: Path | None = None,
           graph_path: Path | None = None, quiet: bool = False):
     graph = dict(np.load(graph_path or CIRCUIT_PATH, allow_pickle=True))
     brain = BatchedBrain(graph, dt=0.005, gain=gain)
@@ -116,7 +117,7 @@ def train(iters: int = 16, pop: int = 64, elites: int = 8, eps: int = 2, seed: i
     device = brain.device
     W_s = make_sensory_projection(int(brain.sensory_idx.numel()), OBS_DIM).to(device)
     feat_idx = select_features(brain, W_s, use_sensory, sensory_gain, n_substeps, dn_topk)
-    brain.init_batch(pop)
+    brain.init_batch(pop + 1 if elitism else pop)
     n_feat = int(feat_idx.numel())
     rng = np.random.default_rng(seed)
     K = n_feat * N_ACTIONS
@@ -126,15 +127,19 @@ def train(iters: int = 16, pop: int = 64, elites: int = 8, eps: int = 2, seed: i
     history = []
     for gen in range(iters):
         samples = rng.normal(0, 1, (pop, K)).astype(np.float32) * sigma + mu
-        fits = np.zeros(pop)
+        if elitism:
+            samples = np.concatenate([samples, mu[None]])      # current mean competes
+        fits = np.zeros(len(samples))
         for _ in range(eps):
-            seeds = [int(rng.integers(0, 8000)) for _ in range(pop)]
+            seeds = [int(rng.integers(0, 8000)) for _ in range(len(samples))]
             fits += episode_fitness(brain, W_s, samples, seeds, feat_idx, sensory_gain,
                                     n_substeps, train_balls)
         fits /= eps
         order = np.argsort(fits)[::-1]
         elite = samples[order[:elites]]
-        mu = elite.mean(0)
+        mu = elite.mean(0) if not elitism else (
+            lambda w: (w[:, None] * elite).sum(0))(
+                (lambda x: x / x.sum())(np.log(elites + 0.5) - np.log(np.arange(1, elites + 1))))
         sigma = elite.std(0) * sigma_decay + sigma_floor
         history.append({"gen": gen, "best": float(fits[order[0]]), "mean": float(fits.mean()),
                         "elite_mean": float(fits[order[:elites]].mean()), "sigma": float(sigma.mean()),
