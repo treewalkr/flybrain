@@ -54,12 +54,30 @@ eval on frozen seeds).
 
 ## What's Been Tried
 
-- **Baseline (run 1)**: iters 24, pop 48, eps 1, substeps 4, gain 1.0,
-  use_sensory=True, sensory_gain 1.0, hops=1 circuit.
-  eval_reward −6.67, catch 33% (≈chance), train elite −2.5, gap −4.2, 180 s.
-  Training clearly fits (best gen policies reach +2) but held-out doesn't follow yet —
-  readout overfits the sampled sensory projection. Next: more CEM generations/eps
-  averaging, noise decay, sensory_gain sweep, feature scaling.
-- Environment notes: MPS dense (no sparse CSR on MPS); hops=2 circuit exists
-  (39.9k neurons, `data/fly/brain_circuit_h2.npz`) but dense MPS would need ~6.4 GB —
-  try only with subsampling or fp16.
+Best recipe (run 23): **iters 48, pop 64, elites 10, eps 3, seed 0, dn_topk 256,
+sigma_decay 0.9, sigma_floor 0.02, train_balls 12, substeps 4, gain 1.0,
+tail-averaged mu (last iters/4 gens) → eval +2.31, catch 55.8%** (baseline −6.67, chance 33%).
+
+Wins, in order of impact:
+- **dn_topk 256** (top-256 DN by variance) vs 128: +1.69 → biggest single lever
+- **48 CEM generations** vs 24: −1.19 → +1.69 line of improvements
+- **tail-averaged mu** (last 12 gens): +2.31, gap turned positive
+- **12-ball training episodes + eps 3**: first positive results
+- scipy/numpy brain core: determinism (bit-identical reruns, zero noise floor)
+
+Dead ends (do not revisit without changed assumptions):
+- Elitism + rank-weighted recombination: amplifies winner's curse (−5.79 at full budget)
+- Cross-seed mu ensembling: averaging policies from independent trajectories destroys both (−6.58)
+- Feature standardization (run 2): −13.1
+- Shrink circuit below ~3k neurons (mc800): degenerate stuck-left policy (−13.85); middle-path richness is essential
+- substeps < 4: coarser integration degrades policy (−2.10 at 2, −3.98 at 3)
+- pop 32 (width matters more than gens): −6.85; eps 5 + fewer gens: −5.54
+- sigma_decay 0.85: premature convergence (−7.38); dn_topk 512: stationary collapse (−7.85)
+- brain gain 1.4: destabilized dynamics (−5.71); sensory_gain 1.5: bit-identical (linear regime)
+- Tail selection (best-of-tail on fresh train episodes): +2.21 < averaging's +2.31
+
+Caveats:
+- Trajectory (seed) variance is ±2–3 reward — single A/B runs are weak evidence for
+  small deltas; strong effects (≥3) are trustworthy
+- Machine load varies wildly (load avg 4–15); wall time 12–50 min, results unaffected
+- use_sensory=True keeps a direct sensory→readout path; DN-only ablation untested (ideas.md)
