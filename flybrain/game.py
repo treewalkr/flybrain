@@ -53,9 +53,10 @@ def observation(env: "CatchEnv") -> np.ndarray:
 
 
 class CatchEnv:
-    """One ball at a time falls; +1 catch, -1 miss; episode = BALLS_PER_EPISODE balls."""
+    """One ball at a time falls; +1 catch, -1 miss; episode = `balls` balls (default 20)."""
 
-    def __init__(self, seed: int):
+    def __init__(self, seed: int, balls: int = BALLS_PER_EPISODE):
+        self.balls_total = balls
         self.rng = np.random.default_rng(seed)
         self.score = 0
         self.catches = 0
@@ -94,7 +95,7 @@ class CatchEnv:
                 reward += 1.0 if caught else -1.0
                 self.catches += int(caught)
                 self.balls += 1
-                if self.balls >= BALLS_PER_EPISODE:
+                if self.balls >= self.balls_total:
                     self.done = True
                     self.score = self.catches
                     return reward, True

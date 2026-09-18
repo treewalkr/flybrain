@@ -80,11 +80,11 @@ def batch_actions(policies: np.ndarray, F: np.ndarray) -> np.ndarray:
 
 def episode_fitness(brain: BatchedBrain, W_s: torch.Tensor, policies: np.ndarray,
                     seeds: list[int], feat_idx: torch.Tensor, sensory_gain: float,
-                    n_substeps: int) -> np.ndarray:
+                    n_substeps: int, train_balls: int = 20) -> np.ndarray:
     """One episode per policy, all P in parallel. Returns per-policy total reward."""
     P = len(policies)
     device = brain.device
-    envs = [CatchEnv(s) for s in seeds]
+    envs = [CatchEnv(s, balls=train_balls) for s in seeds]
     brain.reset_batch()
     rewards = np.zeros(P, np.float64)
     obs = np.stack([observation(e) for e in envs])                      # (P, OBS)
@@ -107,7 +107,8 @@ def episode_fitness(brain: BatchedBrain, W_s: torch.Tensor, policies: np.ndarray
 
 def train(iters: int = 16, pop: int = 64, elites: int = 8, eps: int = 2, seed: int = 0,
           use_sensory: bool = True, sensory_gain: float = 1.0, n_substeps: int = 4,
-          gain: float = 1.0, dn_topk: int | None = 128, out: Path | None = None,
+          gain: float = 1.0, dn_topk: int | None = 128, sigma_decay: float = 0.9,
+          sigma_floor: float = 0.02, train_balls: int = 20, out: Path | None = None,
           graph_path: Path | None = None, quiet: bool = False):
     graph = dict(np.load(graph_path or CIRCUIT_PATH, allow_pickle=True))
     brain = BatchedBrain(graph, dt=0.005, gain=gain)
@@ -128,12 +129,13 @@ def train(iters: int = 16, pop: int = 64, elites: int = 8, eps: int = 2, seed: i
         fits = np.zeros(pop)
         for _ in range(eps):
             seeds = [int(rng.integers(0, 8000)) for _ in range(pop)]
-            fits += episode_fitness(brain, W_s, samples, seeds, feat_idx, sensory_gain, n_substeps)
+            fits += episode_fitness(brain, W_s, samples, seeds, feat_idx, sensory_gain,
+                                    n_substeps, train_balls)
         fits /= eps
         order = np.argsort(fits)[::-1]
         elite = samples[order[:elites]]
         mu = elite.mean(0)
-        sigma = elite.std(0) * 0.9 + 0.02
+        sigma = elite.std(0) * sigma_decay + sigma_floor
         history.append({"gen": gen, "best": float(fits[order[0]]), "mean": float(fits.mean()),
                         "elite_mean": float(fits[order[:elites]].mean()), "sigma": float(sigma.mean()),
                         "seconds": time.time() - t0})
@@ -149,7 +151,9 @@ def train(iters: int = 16, pop: int = 64, elites: int = 8, eps: int = 2, seed: i
         (out / "history.json").write_text(json.dumps(history, indent=1))
         (out / "config.json").write_text(json.dumps(
             {"use_sensory": use_sensory, "sensory_gain": sensory_gain, "n_substeps": n_substeps,
-             "gain": gain, "dn_topk": dn_topk, "pop": pop, "elites": elites, "eps": eps, "iters": iters, "seed": seed,
+             "gain": gain, "dn_topk": dn_topk, "sigma_decay": sigma_decay,
+             "sigma_floor": sigma_floor, "train_balls": train_balls,
+             "pop": pop, "elites": elites, "eps": eps, "iters": iters, "seed": seed,
              "n_feat": n_feat, "n_dn": int(brain.dn_idx.numel()),
              "n_sensory": int(brain.sensory_idx.numel()), "graph": str(graph_path or CIRCUIT_PATH),
              "device": str(brain.device)}, indent=1))
