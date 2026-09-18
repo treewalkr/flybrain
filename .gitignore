@@ -1,0 +1,7 @@
+data/
+__pycache__/
+*.pyc
+.venv/
+.auto/
+*.mp4
+.DS_Store
