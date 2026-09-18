@@ -2,7 +2,8 @@ data/
 __pycache__/
 *.pyc
 .venv/
-.auto/
 *.mp4
 .DS_Store
 ref-projects/
+.auto/log.jsonl
+.auto/ideas.md
