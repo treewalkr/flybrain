@@ -2,25 +2,30 @@
 from __future__ import annotations
 
 import numpy as np
-import torch
 
-from flybrain.brain import BatchedBrain
+from flybrain.brain import BrainModel as BatchedBrain
 from flybrain.game import EVAL_SEEDS, CatchEnv, observation
 from flybrain.readout import make_sensory_projection
 from flybrain.train import N_ACTIONS, batch_actions
 
 
-@torch.no_grad()
 def eval_run(brain: BatchedBrain, params: np.ndarray, cfg: dict, seeds=None, batch: int = 32):
     """Greedy evaluation on frozen eval seeds. Returns dict of stats."""
     from flybrain.game import OBS_DIM
     seeds = list(seeds if seeds is not None else EVAL_SEEDS)
-    device = brain.device
-    W_s = make_sensory_projection(int(brain.sensory_idx.numel()), OBS_DIM).to(device)
-    feat_idx = torch.cat([brain.dn_idx, brain.sensory_idx]) if cfg.get("use_sensory", True) else brain.dn_idx
+    W_s = make_sensory_projection(len(brain.sensory_idx), OBS_DIM)
+    feat_idx = None
     if cfg.get("feat_idx_path"):
-        feat_idx = torch.from_numpy(np.load(cfg["feat_idx_path"]).astype(np.int64)).to(device)
-    n_feat = int(feat_idx.numel())
+        saved = np.load(cfg["feat_idx_path"]).astype(np.int64)
+        if saved.max() < brain.n:                     # saved on this same graph
+            feat_idx = saved
+    if feat_idx is None:
+        # recompute the same deterministic feature selection training used
+        from flybrain.train import select_features
+        feat_idx = select_features(brain, W_s, cfg.get("use_sensory", True),
+                                   cfg.get("sensory_gain", 1.0), cfg.get("n_substeps", 4),
+                                   cfg.get("dn_topk"))
+    n_feat = len(feat_idx)
     P = params.reshape(1, N_ACTIONS, n_feat)
     total_reward, catches, n = 0.0, 0, 0
     act_count = np.zeros(3, np.int64)
@@ -33,11 +38,10 @@ def eval_run(brain: BatchedBrain, params: np.ndarray, cfg: dict, seeds=None, bat
         obs = np.stack([observation(e) for e in envs])
         ep_reward = np.zeros(len(chunk))
         while True:
-            O = torch.from_numpy(obs).to(device)
-            S = torch.relu(W_s @ O.T) * cfg.get("sensory_gain", 1.0)
+            S = np.maximum(W_s @ obs.T, 0.0) * cfg.get("sensory_gain", 1.0)
             brain.clamp_sensory_batch(S)
             brain.step_batch(cfg.get("n_substeps", 4))
-            feats = brain.r[feat_idx].detach().cpu().numpy().T
+            feats = brain.r[feat_idx].T
             acts = batch_actions(reps, feats)
             for aa in acts:
                 act_count[int(aa)] += 1

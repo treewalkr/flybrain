@@ -13,10 +13,9 @@ rich DN activity through real fly wiring; the readout picks the action.
 from __future__ import annotations
 
 import numpy as np
-import torch
 
 
-def make_sensory_projection(n_sensory: int, obs_dim: int, degree: int = 4, seed: int = 7) -> torch.Tensor:
+def make_sensory_projection(n_sensory: int, obs_dim: int, degree: int = 4, seed: int = 7) -> np.ndarray:
     """Fixed sparse random projection obs -> sensory rates, values in {+1,-1}/degree."""
     rng = np.random.default_rng(seed)
     rows = np.repeat(np.arange(n_sensory), degree)
@@ -24,7 +23,7 @@ def make_sensory_projection(n_sensory: int, obs_dim: int, degree: int = 4, seed:
     vals = rng.choice([-1.0, 1.0], size=n_sensory * degree) / np.sqrt(degree)
     W = np.zeros((n_sensory, obs_dim), np.float32)
     np.add.at(W, (rows, cols), vals)
-    return torch.from_numpy(W)
+    return W
 
 
 class Policy:
