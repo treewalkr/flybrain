@@ -118,7 +118,7 @@ def train(iters: int = 16, pop: int = 64, elites: int = 8, eps: int = 2, seed: i
     mu = np.zeros(K, np.float32)
     sigma = np.full(K, 0.5, np.float32)
     mu_tail: list[np.ndarray] = []
-    tail = max(1, iters // 6)          # average mu over the last iters/6 generations
+    tail = max(1, iters // 4)          # average mu over the last iters/4 generations
     t0 = time.time()
     history = []
     for gen in range(iters):
