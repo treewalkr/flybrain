@@ -47,8 +47,9 @@ class BrainModel:
 
     def activity(self) -> np.ndarray:
         """Per-neuron activity in [0, 1] for the renderer (quantile-scaled relu rates)."""
-        hi = np.quantile(self.r, 0.999) if self.r.size else 1.0
-        return np.clip(self.r / (hi if hi > 0 else 1.0), 0.0, 1.0).astype(np.float32)
+        r = self.r if self.r.ndim == 1 else self.r[:, 0]   # batched use: member 0
+        hi = np.quantile(r, 0.999) if r.size else 1.0
+        return np.clip(r / (hi if hi > 0 else 1.0), 0.0, 1.0).astype(np.float32)
 
     def clamp_sensory(self, values: np.ndarray) -> None:
         values = np.asarray(values, np.float32)
