@@ -117,6 +117,8 @@ def train(iters: int = 16, pop: int = 64, elites: int = 8, eps: int = 2, seed: i
     K = n_feat * N_ACTIONS
     mu = np.zeros(K, np.float32)
     sigma = np.full(K, 0.5, np.float32)
+    mu_tail: list[np.ndarray] = []
+    tail = max(1, iters // 6)          # average mu over the last iters/6 generations
     t0 = time.time()
     history = []
     for gen in range(iters):
@@ -138,6 +140,9 @@ def train(iters: int = 16, pop: int = 64, elites: int = 8, eps: int = 2, seed: i
         history.append({"gen": gen, "best": float(fits[order[0]]), "mean": float(fits.mean()),
                         "elite_mean": float(fits[order[:elites]].mean()), "sigma": float(sigma.mean()),
                         "seconds": time.time() - t0})
+        mu_tail.append(mu.copy())
+        if len(mu_tail) > tail:
+            mu_tail.pop(0)
         if not quiet:
             print(f"gen {gen:3d} best {fits[order[0]]:7.2f} elite {history[-1]['elite_mean']:7.2f} "
                   f"mean {fits.mean():7.2f} sigma {sigma.mean():.3f} {history[-1]['seconds']:5.1f}s", flush=True)
@@ -156,6 +161,7 @@ def train(iters: int = 16, pop: int = 64, elites: int = 8, eps: int = 2, seed: i
              "n_feat": n_feat, "n_dn": len(brain.dn_idx),
              "n_sensory": len(brain.sensory_idx), "graph": str(graph_path or CIRCUIT_PATH),
              "device": "cpu(scipy)"}, indent=1))
+    mu = np.mean(mu_tail, axis=0).astype(np.float32)   # tail-averaged final policy
     return mu, sigma, history
 
 
