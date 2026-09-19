@@ -7,10 +7,6 @@ cd "$(dirname "$0")/.."
 
 # Train on the training stream (fixed budget), then evaluate on frozen eval seeds.
 # Emits METRIC lines parsed by run_experiment.
-PROTOCOL=$(.venv/bin/python -c "import json;print(json.load(open('.auto/config.json')).get('protocol','single'))" 2>/dev/null || echo single)
-if [ "$PROTOCOL" = "multiseed" ]; then
-  exec .venv/bin/python .auto/select_train.py
-fi
 RUN=$(.venv/bin/python - <<'PY'
 import time, json
 from pathlib import Path
@@ -30,7 +26,7 @@ for k in range(ENS):
         sensory_gain=cfg.get('sensory_gain', 1.0), n_substeps=cfg.get('n_substeps', 4),
         gain=cfg.get('gain', 1.0), dn_topk=cfg.get('dn_topk'), quiet=True,
         sigma_decay=cfg.get('sigma_decay', 0.9), sigma_floor=cfg.get('sigma_floor', 0.02),
-        train_balls=cfg.get("train_balls", 20), workers=int(cfg.get("workers", 0)), elitism=cfg.get("elitism", False),
+        train_balls=cfg.get("train_balls", 20), elitism=cfg.get("elitism", False),
         out=Path(f'data/runs/measure_{k}'))
     mus.append(mu_k); hists.append(hist)
 mu = np.mean(mus, axis=0).astype(np.float32)
