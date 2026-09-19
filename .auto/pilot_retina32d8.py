@@ -1,9 +1,9 @@
-"""Champion-restart refinement pool (budgeted, resumable, val-gated).
+"""Retina-32 pilot: finer ball localization, fresh pool, val-gated eval.
 
-Initialize CEM at the champion's mu (ms_32, val +8.42) with small sigma and
-refine with fresh episode seeds - local hill-climb from the best known point,
-with correct selection (unlike the failed elitism injection). Gate: spend the
-single frozen-eval read only if a refinement beats +8.42 on validation.
+Uniform encoding change (FLY_RETINA_W=32) applied to train/val/eval alike;
+frozen EVAL_SEEDS untouched. Protocol: 6 fresh runs scored on validation only;
+the single frozen-eval confirmation is spent ONLY if the best val beats the
+incumbent's +8.42 (anti-eval-fishing gate).
 """
 import json
 import os
@@ -11,65 +11,64 @@ import sys
 import time
 from pathlib import Path
 
+os.environ["FLY_RETINA_W"] = "32"
+os.environ["FLY_PROJ_DEGREE"] = "8"
 sys.path.insert(0, ".")
 
 import numpy as np                                            # noqa: E402
 from flybrain.brain import BrainModel as BatchedBrain         # noqa: E402
 from flybrain.eval_util import eval_run                       # noqa: E402
+from flybrain.game import OBS_DIM, RETINA_W                   # noqa: E402
 from flybrain.train import train                              # noqa: E402
 
 CFG = json.load(open(".auto/config.json"))
-CHAMP = Path("data/runs/champ_lin")
-GATE = 15.17
+RUNS = {47: {}, 48: {}, 49: {}, 50: {"pop": 96, "eps": 4}}
 VAL_SEEDS = list(range(8500, 8548))
-MU0 = np.load(CHAMP / "mu.npy")
+INCUMBENT_VAL = 8.42
 
-RUNS = {
-    101: {"iters": 24, "sigma_init": 0.15, "train_balls": 24, "eps": 3},   # matched compute
-    102: {"iters": 24, "sigma_init": 0.12, "train_balls": 24, "eps": 3},
-    103: {"iters": 24, "sigma_init": 0.15, "train_balls": 24, "eps": 6},   # 2x data
-    104: {"iters": 24, "pop": 96, "eps": 4, "sigma_init": 0.15, "train_balls": 24},
-}
-
+print(f"retina {RETINA_W}x12, OBS_DIM {OBS_DIM}", flush=True)
 t0 = time.time()
-BUDGET_S = float(os.environ.get("PILOT_BUDGET_S", "4200"))
+BUDGET_S = float(os.environ.get("PILOT_BUDGET_S", "4200"))   # train within budget, then wrap up
 best = None
 for s, ov in RUNS.items():
-    out = Path(f"data/runs/rf5_{s}")
+    out = Path(f"data/runs/r32d8_{s}")
     if not (out / "mu.npy").exists():
         if time.time() - t0 > BUDGET_S:
             print(f"budget reached before seed {s} - resumable, rerun to continue", flush=True)
             continue
         rc = {**CFG, **ov}
         train(seed=s, out=out, workers=int(rc.get("workers", 6)), graph_path=rc["graph"],
-              iters=rc["iters"], pop=rc.get("pop", 64), elites=rc.get("elites", 10),
+              iters=rc.get("iters", 96), pop=rc.get("pop", 64), elites=rc.get("elites", 10),
               eps=rc.get("eps", 6), use_sensory=True, sensory_gain=1.0, n_substeps=4,
-              gain=1.0, dn_topk=256, sigma_decay=0.9, sigma_floor=0.02,
-              train_balls=rc.get("train_balls", 12), quiet=True, mu_init=MU0,
-              sigma_init=rc["sigma_init"])
+              gain=1.0, dn_topk=rc.get("dn_topk", 256), sigma_decay=0.9, sigma_floor=0.02,
+              train_balls=12, quiet=True)
     cfg = json.load(open(out / "config.json"))
     cfg["feat_idx_path"] = str(out / "feat_idx.npy")
     graph = dict(np.load(cfg["graph"], allow_pickle=True))
     brain = BatchedBrain(graph, dt=0.005, gain=cfg["gain"])
     v = eval_run(brain, np.load(out / "mu.npy"), cfg, seeds=VAL_SEEDS, batch=48)
-    print(f"rf seed {s} (sig {ov['sigma_init']}, it {ov['iters']}): val {v['eval_reward']:+.2f}"
-          f"  catch {v['catch_rate']*100:.0f}%  ({time.time()-t0:.0f}s)", flush=True)
+    print(f"r32d8 seed {s}: val {v['eval_reward']:+.2f}  catch {v['catch_rate']*100:.0f}%  ({time.time()-t0:.0f}s)", flush=True)
     if best is None or v["eval_reward"] > best[1]:
         best = (s, v["eval_reward"], out)
 
-if best is None or best[1] <= GATE:
-    print(f"gate: best {best} <= {GATE} - no eval spend", flush=True)
-    print(f"METRIC eval_reward={best[1] if best else 0:.4f}")
-    print("METRIC catch_rate=0 train_reward=0 gap=0 hist_last_best=0")
+if best[1] <= INCUMBENT_VAL:
+    print(f"gate: best val {best[1]:+.2f} <= incumbent {INCUMBENT_VAL:+.2f} - no eval spend", flush=True)
+    print(f"METRIC eval_reward={best[1]:.4f}")
+    print("METRIC catch_rate=0")
+    print("METRIC train_reward=0")
+    print("METRIC gap=0")
+    print("METRIC hist_last_best=0")
     print(f"METRIC train_seconds={time.time() - t0:.1f}")
     sys.exit(0)
 
 s, val, out = best
-print(f"gate passed: rf seed {s} val {val:+.2f} -> frozen eval", flush=True)
+print(f"gate passed: r32d8 seed {s} val {val:+.2f} > {INCUMBENT_VAL:+.2f} -> frozen eval", flush=True)
 cfg = json.load(open(out / "config.json"))
 cfg["feat_idx_path"] = str(out / "feat_idx.npy")
 graph = dict(np.load(cfg["graph"], allow_pickle=True))
 brain = BatchedBrain(graph, dt=0.005, gain=cfg["gain"])
+os.environ["FLY_RETINA_W"] = "32"
+os.environ["FLY_PROJ_DEGREE"] = "8"
 r = eval_run(brain, np.load(out / "mu.npy"), cfg)
 print(f"METRIC eval_reward={r['eval_reward']:.4f}")
 print(f"METRIC catch_rate={r['catch_rate']:.4f}")

@@ -7,15 +7,21 @@ cd "$(dirname "$0")/.."
 
 # Train on the training stream (fixed budget), then evaluate on frozen eval seeds.
 # Emits METRIC lines parsed by run_experiment.
-PROTOCOL=$(.venv/bin/python -c "import json;print(json.load(open('.auto/config.json')).get('protocol','single'))" 2>/dev/null || echo single)
+PROTOCOL="${MEASURE_PROTOCOL:-$(.venv/bin/python -c "import json;print(json.load(open('.auto/config.json')).get('protocol','single'))" 2>/dev/null || echo single)}"
 if [ "$PROTOCOL" = "multiseed" ]; then
   exec .venv/bin/python .auto/select_train.py
 fi
 if [ "$PROTOCOL" = "coverage" ]; then
   exec .venv/bin/python .auto/coverage_probe.py
 fi
+if [ "$PROTOCOL" = "char" ]; then
+  exec .venv/bin/python .auto/char_champ.py
+fi
 if [ "$PROTOCOL" = "lineage" ]; then
   exec .venv/bin/python .auto/lineage_screen.py
+fi
+if [ "$PROTOCOL" = "simplex" ]; then
+  exec .venv/bin/python .auto/simplex_screen.py
 fi
 if [ "$PROTOCOL" = "refine" ]; then
   exec .venv/bin/python .auto/refine_pool.py
@@ -25,6 +31,9 @@ if [ "$PROTOCOL" = "ensemble" ]; then
 fi
 if [ "$PROTOCOL" = "dnpool" ]; then
   exec .venv/bin/python .auto/dn_pool.py
+fi
+if [ "$PROTOCOL" = "pilot32d8" ]; then
+  exec .venv/bin/python .auto/pilot_retina32d8.py
 fi
 if [ "$PROTOCOL" = "pilot32" ]; then
   exec .venv/bin/python .auto/pilot_retina32.py
