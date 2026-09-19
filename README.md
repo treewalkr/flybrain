@@ -43,12 +43,15 @@ nonlinear feature map from senses to descending neurons.
 | **connectome-only readout** (val-selected, run 46) | +1.69 | **54%** |
 | CEM readout, single run (across training seeds) | −3.6 … +2.3 | 41–56% |
 | CEM readout, 29-artifact validation-selected pool | — | 20–71% (val) |
-| **best artifact (`data/runs/ms_32`, pop 96/eps 4)** | **+7.5** | **69%** |
+| **best artifact (`data/runs/rf2_71`, champion-restart refinement)** | **+13.8** | **84.4%** |
+
+Refinement lineage: val-selected pool winner `ms_32` (+7.5, 69%) → CEM restart
+at the champion μ with small σ and fresh seeds (`rf_6x` → `rf2_71`) → 84.4%.
 
 **The science headline:** with every synapse frozen real anatomy, reading out only
 what the fly connectome does with the retina reaches **54% catch — above every
 single unselected full-model run**. The direct sensory→readout shortcut adds
-~15pp at the selection top end (69%).
+~15pp at the selection top end, and champion-restart refinement climbs to 84%.
 
 Catch rate is the stable signal (always well above chance); episode reward carries
 the trajectory variance of a small-sample CEM. The best artifact is selected on
