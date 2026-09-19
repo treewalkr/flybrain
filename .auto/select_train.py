@@ -19,7 +19,7 @@ from flybrain.eval_util import eval_run                        # noqa: E402
 from flybrain.train import train                               # noqa: E402
 
 CFG = json.load(open(".auto/config.json"))
-SEEDS = [11, 12, 13, 14]
+SEEDS = [11, 12, 13, 14, 15, 16, 17, 18]
 VAL_SEEDS = list(range(8500, 8548))
 
 t0 = time.time()
