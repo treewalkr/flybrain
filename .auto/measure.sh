@@ -14,6 +14,9 @@ fi
 if [ "$PROTOCOL" = "coverage" ]; then
   exec .venv/bin/python .auto/coverage_probe.py
 fi
+if [ "$PROTOCOL" = "refine" ]; then
+  exec .venv/bin/python .auto/refine_pool.py
+fi
 if [ "$PROTOCOL" = "ensemble" ]; then
   exec .venv/bin/python .auto/ensemble_screen.py
 fi
