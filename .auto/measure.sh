@@ -11,6 +11,9 @@ PROTOCOL=$(.venv/bin/python -c "import json;print(json.load(open('.auto/config.j
 if [ "$PROTOCOL" = "multiseed" ]; then
   exec .venv/bin/python .auto/select_train.py
 fi
+if [ "$PROTOCOL" = "pilot32" ]; then
+  exec .venv/bin/python .auto/pilot_retina32.py
+fi
 if [ "$PROTOCOL" = "maximin" ]; then
   exec .venv/bin/python .auto/select_maximin.py
 fi
