@@ -141,7 +141,7 @@ def train(iters: int = 16, pop: int = 64, elites: int = 8, eps: int = 2, seed: i
           use_sensory: bool = True, sensory_gain: float = 1.0, n_substeps: int = 4,
           gain: float = 1.0, dn_topk: int | None = 128, sigma_decay: float = 0.9,
           sigma_floor: float = 0.02, train_balls: int = 20, elitism: bool = False,
-          workers: int = 0,
+          workers: int = 0, mu_init: np.ndarray | None = None, sigma_init: float = 0.5,
           out: Path | None = None,
           graph_path: Path | None = None, quiet: bool = False):
     graph = dict(np.load(graph_path or CIRCUIT_PATH, allow_pickle=True))
@@ -153,8 +153,8 @@ def train(iters: int = 16, pop: int = 64, elites: int = 8, eps: int = 2, seed: i
     n_feat = len(feat_idx)
     rng = np.random.default_rng(seed)
     K = n_feat * N_ACTIONS
-    mu = np.zeros(K, np.float32)
-    sigma = np.full(K, 0.5, np.float32)
+    mu = np.zeros(K, np.float32) if mu_init is None else np.asarray(mu_init, np.float32).copy()
+    sigma = np.full(K, 0.5, np.float32) if mu_init is None else np.full(K, float(sigma_init), np.float32)
     mu_tail: list[np.ndarray] = []
     tail = max(1, iters // 4)          # average mu over the last iters/4 generations
     t0 = time.time()
