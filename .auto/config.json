@@ -1,6 +1,7 @@
 {
-  "iters": 96, "pop": 64, "elites": 10, "eps": 6, "seed": 0, "workers": 6,
-  "use_sensory": false, "sensory_gain": 1.0, "n_substeps": 4, "gain": 1.0,
+  "protocol": "pilot32",
+  "iters": 96, "pop": 64, "elites": 10, "eps": 6, "workers": 6,
+  "use_sensory": true, "sensory_gain": 1.0, "n_substeps": 4, "gain": 1.0,
   "dn_topk": 256, "sigma_decay": 0.9, "sigma_floor": 0.02,
   "train_balls": 12, "graph": "data/fly/brain_circuit.npz"
 }
