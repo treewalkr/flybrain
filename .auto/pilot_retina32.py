@@ -27,10 +27,14 @@ INCUMBENT_VAL = 8.42
 
 print(f"retina {RETINA_W}x12, OBS_DIM {OBS_DIM}", flush=True)
 t0 = time.time()
+BUDGET_S = float(os.environ.get("PILOT_BUDGET_S", "4200"))   # train within budget, then wrap up
 best = None
 for s, ov in RUNS.items():
     out = Path(f"data/runs/r32_{s}")
     if not (out / "mu.npy").exists():
+        if time.time() - t0 > BUDGET_S:
+            print(f"budget reached before seed {s} - resumable, rerun to continue", flush=True)
+            continue
         rc = {**CFG, **ov}
         train(seed=s, out=out, workers=int(rc.get("workers", 6)), graph_path=rc["graph"],
               iters=rc.get("iters", 96), pop=rc.get("pop", 64), elites=rc.get("elites", 10),
