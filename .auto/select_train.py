@@ -28,6 +28,11 @@ RECIPES = {
     33: {"elites": 16},                    # smoother elite statistics
     34: {"sigma_floor": 0.04},             # more late exploration
     35: {"iters": 192},                    # double depth
+    # run #39: width>depth - draw more from the pop96/eps4 distribution
+    36: {"pop": 96, "eps": 4},
+    37: {"pop": 96, "eps": 4},
+    38: {"pop": 96, "eps": 4},
+    39: {"pop": 96, "eps": 4},
 }
 SEEDS += list(RECIPES)
 VAL_SEEDS = list(range(8500, 8548))
