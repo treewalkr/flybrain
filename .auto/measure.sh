@@ -14,6 +14,9 @@ fi
 if [ "$PROTOCOL" = "coverage" ]; then
   exec .venv/bin/python .auto/coverage_probe.py
 fi
+if [ "$PROTOCOL" = "lineage" ]; then
+  exec .venv/bin/python .auto/lineage_screen.py
+fi
 if [ "$PROTOCOL" = "refine" ]; then
   exec .venv/bin/python .auto/refine_pool.py
 fi
