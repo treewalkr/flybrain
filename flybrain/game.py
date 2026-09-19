@@ -18,9 +18,11 @@ Seeds protocol (anti-overfit):
 """
 from __future__ import annotations
 
+import os
+
 import numpy as np
 
-RETINA_W, RETINA_H = 16, 12
+RETINA_W, RETINA_H = int(os.environ.get("FLY_RETINA_W", "16")), 12
 FIELD_W, FIELD_H = 1.0, 1.0
 PADDLE_W = 0.14
 BALL_SPEED = 0.55          # field heights per second
