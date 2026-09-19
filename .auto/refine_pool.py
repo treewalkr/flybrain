@@ -19,23 +19,23 @@ from flybrain.eval_util import eval_run                       # noqa: E402
 from flybrain.train import train                              # noqa: E402
 
 CFG = json.load(open(".auto/config.json"))
-CHAMP = Path("data/runs/rf_63")
-GATE = 11.46
+CHAMP = Path("data/runs/rf2_71")
+GATE = 13.50
 VAL_SEEDS = list(range(8500, 8548))
 MU0 = np.load(CHAMP / "mu.npy")
 
 RUNS = {
-    71: {"iters": 24, "sigma_init": 0.15},
-    72: {"iters": 24, "sigma_init": 0.10},
-    73: {"iters": 24, "sigma_init": 0.07},
-    74: {"iters": 24, "pop": 96, "eps": 4, "sigma_init": 0.10},
+    81: {"iters": 24, "sigma_init": 0.20},
+    82: {"iters": 24, "sigma_init": 0.15},
+    83: {"iters": 24, "sigma_init": 0.10},
+    84: {"iters": 24, "pop": 96, "eps": 4, "sigma_init": 0.15},
 }
 
 t0 = time.time()
 BUDGET_S = float(os.environ.get("PILOT_BUDGET_S", "4200"))
 best = None
 for s, ov in RUNS.items():
-    out = Path(f"data/runs/rf2_{s}")
+    out = Path(f"data/runs/rf3_{s}")
     if not (out / "mu.npy").exists():
         if time.time() - t0 > BUDGET_S:
             print(f"budget reached before seed {s} - resumable, rerun to continue", flush=True)
