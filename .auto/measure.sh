@@ -11,6 +11,12 @@ PROTOCOL=$(.venv/bin/python -c "import json;print(json.load(open('.auto/config.j
 if [ "$PROTOCOL" = "multiseed" ]; then
   exec .venv/bin/python .auto/select_train.py
 fi
+if [ "$PROTOCOL" = "coverage" ]; then
+  exec .venv/bin/python .auto/coverage_probe.py
+fi
+if [ "$PROTOCOL" = "dnpool" ]; then
+  exec .venv/bin/python .auto/dn_pool.py
+fi
 if [ "$PROTOCOL" = "pilot32" ]; then
   exec .venv/bin/python .auto/pilot_retina32.py
 fi
