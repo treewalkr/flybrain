@@ -9,7 +9,8 @@ from flybrain.readout import make_sensory_projection
 from flybrain.train import N_ACTIONS, batch_actions
 
 
-def eval_run(brain: BatchedBrain, params: np.ndarray, cfg: dict, seeds=None, batch: int = 32):
+def eval_run(brain: BatchedBrain, params: np.ndarray, cfg: dict, seeds=None, batch: int = 32,
+              env_cls=CatchEnv, landing_log: list | None = None):
     """Greedy evaluation on frozen eval seeds. Returns dict of stats."""
     from flybrain.game import OBS_DIM
     seeds = list(seeds if seeds is not None else EVAL_SEEDS)
@@ -33,7 +34,7 @@ def eval_run(brain: BatchedBrain, params: np.ndarray, cfg: dict, seeds=None, bat
         chunk = seeds[c0:c0 + batch]
         brain.init_batch(len(chunk))
         brain.reset_batch()
-        envs = [CatchEnv(s) for s in chunk]
+        envs = [env_cls(s) for s in chunk]
         reps = np.repeat(P, len(chunk), axis=0)          # same greedy policy for every member
         obs = np.stack([observation(e) for e in envs])
         ep_reward = np.zeros(len(chunk))
@@ -56,6 +57,9 @@ def eval_run(brain: BatchedBrain, params: np.ndarray, cfg: dict, seeds=None, bat
         total_reward += float(ep_reward.sum())
         catches += sum(e.catches for e in envs)
         n += len(chunk)
+        if landing_log is not None:
+            for e in envs:
+                landing_log.extend(getattr(e, "landings", []))
     balls_per_ep = envs[0].balls
     act_frac = (act_count / act_count.sum()).tolist()
     return {"eval_reward": total_reward / n, "catches": catches / n,
