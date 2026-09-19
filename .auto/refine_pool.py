@@ -19,15 +19,15 @@ from flybrain.eval_util import eval_run                       # noqa: E402
 from flybrain.train import train                              # noqa: E402
 
 CFG = json.load(open(".auto/config.json"))
-CHAMP = Path("data/runs/rf3_84")
-GATE = 14.96
+CHAMP = Path("data/runs/champ_lin")
+GATE = 15.17
 VAL_SEEDS = list(range(8500, 8548))
 MU0 = np.load(CHAMP / "mu.npy")
 
 RUNS = {
-    91: {"iters": 24, "sigma_init": 0.20},
+    91: {"iters": 24, "sigma_init": 0.18},
     92: {"iters": 24, "sigma_init": 0.15},
-    93: {"iters": 24, "sigma_init": 0.10},
+    93: {"iters": 24, "sigma_init": 0.12},
     94: {"iters": 24, "pop": 96, "eps": 4, "sigma_init": 0.15},
 }
 
