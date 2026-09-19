@@ -40,9 +40,15 @@ nonlinear feature map from senses to descending neurons.
 | policy | eval reward (frozen seeds) | catch rate |
 |---|---:|---:|
 | random | ≈ −6.7 | 33% |
+| **connectome-only readout** (val-selected, run 46) | +1.69 | **54%** |
 | CEM readout, single run (across training seeds) | −3.6 … +2.3 | 41–56% |
-| CEM readout, 25-artifact validation-selected pool | — | 20–71% (val) |
+| CEM readout, 29-artifact validation-selected pool | — | 20–71% (val) |
 | **best artifact (`data/runs/ms_32`, pop 96/eps 4)** | **+7.5** | **69%** |
+
+**The science headline:** with every synapse frozen real anatomy, reading out only
+what the fly connectome does with the retina reaches **54% catch — above every
+single unselected full-model run**. The direct sensory→readout shortcut adds
+~15pp at the selection top end (69%).
 
 Catch rate is the stable signal (always well above chance); episode reward carries
 the trajectory variance of a small-sample CEM. The best artifact is selected on
