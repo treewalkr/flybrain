@@ -15,8 +15,15 @@ from __future__ import annotations
 import numpy as np
 
 
-def make_sensory_projection(n_sensory: int, obs_dim: int, degree: int = 4, seed: int = 7) -> np.ndarray:
-    """Fixed sparse random projection obs -> sensory rates, values in {+1,-1}/degree."""
+def make_sensory_projection(n_sensory: int, obs_dim: int, degree: int | None = None, seed: int = 7) -> np.ndarray:
+    """Fixed sparse random projection obs -> sensory rates, values in {+1,-1}/degree.
+
+    degree defaults to FLY_PROJ_DEGREE (or 4) so the projection DENSITY
+    (degree/obs_dim) stays constant when the retina size changes.
+    """
+    import os
+    if degree is None:
+        degree = int(os.environ.get("FLY_PROJ_DEGREE", 4))
     rng = np.random.default_rng(seed)
     rows = np.repeat(np.arange(n_sensory), degree)
     cols = rng.integers(0, obs_dim, size=n_sensory * degree)
