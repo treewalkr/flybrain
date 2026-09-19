@@ -82,7 +82,9 @@ Caveats:
   recipe scores −3.6…+2.3 reward, 41–56% catch (chance 33%): catch rate is the
   stable metric; seed replicas logged as informational discards (runs 19, 33)
 - Machine load varies wildly (load avg 4–28); wall time 12–50 min, results unaffected
-- use_sensory=True keeps a direct sensory→readout path; DN-only ablation untested (ideas.md)
+- use_sensory=True keeps a direct sensory→readout path; **DN-only ablation (run 43): connectome
+  alone reaches 46% catch (chance 33%) — the real fly wiring genuinely carries the task;
+  the sensory shortcut adds the top end (69% champion)**
 - Closed directions (do not reopen): elitism, cross-seed averaging, feature scaling,
   circuit shrink, substeps<4, pop shrink, sigma_decay 0.85, dn_topk 512,
   gain 1.4, sensory_gain, tau 10ms, n_sensory 600, min-fitness, elites 16, iters 60
