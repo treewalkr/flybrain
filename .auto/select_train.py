@@ -19,7 +19,17 @@ from flybrain.eval_util import eval_run                        # noqa: E402
 from flybrain.train import train                               # noqa: E402
 
 CFG = json.load(open(".auto/config.json"))
-SEEDS = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
+SEEDS = list(range(11, 31))
+# recipe diversity: per-seed overrides over the champion recipe - fatten the top
+# tail of the pool instead of drawing more seeds from the same distribution
+RECIPES = {
+    31: {"iters": 144, "eps": 4},          # deeper CEM
+    32: {"pop": 96, "eps": 4},             # wider population
+    33: {"elites": 16},                    # smoother elite statistics
+    34: {"sigma_floor": 0.04},             # more late exploration
+    35: {"iters": 192},                    # double depth
+}
+SEEDS += list(RECIPES)
 VAL_SEEDS = list(range(8500, 8548))
 
 t0 = time.time()
@@ -29,12 +39,13 @@ best = None
 for s in SEEDS:
     out = Path(f"data/runs/ms_{s}")
     if not (out / "mu.npy").exists():          # resume: reuse trained artifacts
-        train(seed=s, out=out, workers=int(CFG.get("workers", 0)), graph_path=CFG["graph"],
-              iters=CFG["iters"], pop=CFG["pop"], elites=CFG["elites"], eps=CFG["eps"],
-              use_sensory=CFG["use_sensory"], sensory_gain=CFG["sensory_gain"],
-              n_substeps=CFG["n_substeps"], gain=CFG["gain"], dn_topk=CFG["dn_topk"],
-              sigma_decay=CFG["sigma_decay"], sigma_floor=CFG["sigma_floor"],
-              train_balls=CFG["train_balls"], quiet=True)
+        rc = {**CFG, **RECIPES.get(s, {})}
+        train(seed=s, out=out, workers=int(rc.get("workers", 0)), graph_path=rc["graph"],
+              iters=rc["iters"], pop=rc["pop"], elites=rc["elites"], eps=rc["eps"],
+              use_sensory=rc["use_sensory"], sensory_gain=rc["sensory_gain"],
+              n_substeps=rc["n_substeps"], gain=rc["gain"], dn_topk=rc["dn_topk"],
+              sigma_decay=rc["sigma_decay"], sigma_floor=rc["sigma_floor"],
+              train_balls=rc["train_balls"], quiet=True)
     mu = np.load(out / "mu.npy")
     cfg = json.load(open(out / "config.json"))
     cfg["feat_idx_path"] = str(out / "feat_idx.npy")
