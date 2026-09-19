@@ -12,6 +12,7 @@ import time
 from pathlib import Path
 
 os.environ["FLY_RETINA_W"] = "32"
+os.environ.setdefault("FLY_PROJ_DEGREE", "8")
 sys.path.insert(0, ".")
 
 import numpy as np                                            # noqa: E402
@@ -21,16 +22,16 @@ from flybrain.game import OBS_DIM, RETINA_W                   # noqa: E402
 from flybrain.train import train                              # noqa: E402
 
 CFG = json.load(open(".auto/config.json"))
-RUNS = {41: {}, 42: {}, 43: {}, 44: {}, 45: {}, 46: {"pop": 96, "eps": 4}}
+RUNS = {111: {}, 112: {}, 113: {}, 114: {"pop": 96, "eps": 4}}
 VAL_SEEDS = list(range(8500, 8548))
-INCUMBENT_VAL = 8.42
+INCUMBENT_VAL = 8.42   # pool-of-29 best; best-of-4 from an equal distribution rarely clears this - pass = axis is genuinely better
 
 print(f"retina {RETINA_W}x12, OBS_DIM {OBS_DIM}", flush=True)
 t0 = time.time()
 BUDGET_S = float(os.environ.get("PILOT_BUDGET_S", "4200"))   # train within budget, then wrap up
 best = None
 for s, ov in RUNS.items():
-    out = Path(f"data/runs/r32_{s}")
+    out = Path(f"data/runs/r32d8_{s}")
     if not (out / "mu.npy").exists():
         if time.time() - t0 > BUDGET_S:
             print(f"budget reached before seed {s} - resumable, rerun to continue", flush=True)
@@ -67,6 +68,7 @@ cfg["feat_idx_path"] = str(out / "feat_idx.npy")
 graph = dict(np.load(cfg["graph"], allow_pickle=True))
 brain = BatchedBrain(graph, dt=0.005, gain=cfg["gain"])
 os.environ["FLY_RETINA_W"] = "32"
+os.environ.setdefault("FLY_PROJ_DEGREE", "8")
 r = eval_run(brain, np.load(out / "mu.npy"), cfg)
 print(f"METRIC eval_reward={r['eval_reward']:.4f}")
 print(f"METRIC catch_rate={r['catch_rate']:.4f}")

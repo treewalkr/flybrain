@@ -1,5 +1,4 @@
 {
-  "protocol": "char",
-  "use_sensory": true, "sensory_gain": 1.0, "n_substeps": 4, "gain": 1.0,
-  "dn_topk": 256, "train_balls": 12, "graph": "data/fly/brain_circuit.npz"
+  "protocol": "valnoise",
+  "graph": "data/fly/brain_circuit.npz"
 }

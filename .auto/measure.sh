@@ -14,6 +14,9 @@ fi
 if [ "$PROTOCOL" = "coverage" ]; then
   exec .venv/bin/python .auto/coverage_probe.py
 fi
+if [ "$PROTOCOL" = "valnoise" ]; then
+  exec .venv/bin/python .auto/valnoise.py
+fi
 if [ "$PROTOCOL" = "char" ]; then
   exec .venv/bin/python .auto/char_champ.py
 fi
