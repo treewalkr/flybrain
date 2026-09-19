@@ -28,6 +28,9 @@ RECIPES = {
     33: {"elites": 16},                    # smoother elite statistics
     34: {"sigma_floor": 0.04},             # more late exploration
     35: {"iters": 192},                    # double depth
+    36: {"pop": 96, "eps": 4},             # more pop-96 draws (winning recipe)
+    37: {"pop": 96, "eps": 4},
+    38: {"pop": 96, "eps": 4},
     # run #39: width>depth - draw more from the pop96/eps4 distribution
     36: {"pop": 96, "eps": 4},
     37: {"pop": 96, "eps": 4},
@@ -35,7 +38,7 @@ RECIPES = {
     39: {"pop": 96, "eps": 4},
 }
 SEEDS += list(RECIPES)
-VAL_SEEDS = list(range(8500, 8548))
+VAL_SEEDS = list(range(8500, 8596))
 
 t0 = time.time()
 graph = dict(np.load(CFG["graph"], allow_pickle=True))
