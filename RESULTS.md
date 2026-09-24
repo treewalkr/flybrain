@@ -60,7 +60,11 @@ regime — bit-identical), tau 10 ms, retina 32 (encoding dilution), 24-ball
 episodes, coverage/maximin selection (≡ aggregate selection), ensembles beyond
 the lineage average, margin-argmax decoding, landing-correlation feature
 selection (augmentation and from-scratch replacement both fail: the criterion
-is immaterial, from-scratch MI +8.25/71% vs variance +8.42/68.8%).
+is immaterial, from-scratch MI +8.25/71% vs variance +8.42/68.8%),
+per-channel input gains (relu clipping is active — 40.8% of DN voltages clip —
+so gains genuinely reshape the computation, and CEM actively uses them; yet
+from-scratch (+8.21/71%) and champion-anchored (+13.54 < +15.17) ceilings match
+the readout-only family exactly).
 
 ## Failure-mode analysis (final)
 

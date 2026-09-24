@@ -62,6 +62,12 @@ fi
 if [ "$PROTOCOL" = "miscratch" ]; then
   exec .venv/bin/python .auto/mi_scratch_pool.py
 fi
+if [ "$PROTOCOL" = "gain" ]; then
+  exec .venv/bin/python .auto/gain_pool.py
+fi
+if [ "$PROTOCOL" = "gainref" ]; then
+  exec .venv/bin/python .auto/gainref_pool.py
+fi
 if [ "$PROTOCOL" = "maximin" ]; then
   exec .venv/bin/python .auto/select_maximin.py
 fi
