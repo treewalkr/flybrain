@@ -14,7 +14,7 @@ def eval_run(brain: BatchedBrain, params: np.ndarray, cfg: dict, seeds=None, bat
     """Greedy evaluation on frozen eval seeds. Returns dict of stats."""
     from flybrain.game import OBS_DIM
     seeds = list(seeds if seeds is not None else EVAL_SEEDS)
-    W_s = make_sensory_projection(len(brain.sensory_idx), OBS_DIM)
+    W_s = make_sensory_projection(len(brain.sensory_idx), OBS_DIM, seed=cfg.get("proj_seed", 7))
     feat_idx = None
     if cfg.get("feat_idx_path"):
         saved = np.load(cfg["feat_idx_path"]).astype(np.int64)
