@@ -41,6 +41,12 @@ fi
 if [ "$PROTOCOL" = "pilot32" ]; then
   exec .venv/bin/python .auto/pilot_retina32.py
 fi
+if [ "$PROTOCOL" = "sub6" ]; then
+  exec .venv/bin/python .auto/sub6_pool.py
+fi
+if [ "$PROTOCOL" = "dn512" ]; then
+  exec .venv/bin/python .auto/dn512_pool.py
+fi
 if [ "$PROTOCOL" = "maximin" ]; then
   exec .venv/bin/python .auto/select_maximin.py
 fi
