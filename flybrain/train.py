@@ -77,7 +77,8 @@ def batch_actions(policies: np.ndarray, F: np.ndarray) -> np.ndarray:
 
 def episode_fitness(brain: BatchedBrain, W_s: np.ndarray, policies: np.ndarray,
                     seeds: list[int], feat_idx: np.ndarray, sensory_gain: float,
-                    n_substeps: int, train_balls: int = 20) -> np.ndarray:
+                    n_substeps: int, train_balls: int = 20,
+                    gains: np.ndarray | None = None) -> np.ndarray:
     """One episode per policy, all P in parallel. Returns per-policy total reward."""
     P = len(policies)
     envs = [CatchEnv(s, balls=train_balls) for s in seeds]
@@ -86,6 +87,8 @@ def episode_fitness(brain: BatchedBrain, W_s: np.ndarray, policies: np.ndarray,
     obs = np.stack([observation(e) for e in envs])                      # (P, OBS)
     while True:
         S = np.maximum(W_s @ obs.T, 0.0) * sensory_gain                  # (n_sens, P)
+        if gains is not None:
+            S = S * gains.T
         brain.clamp_sensory_batch(S)
         brain.step_batch(n_substeps)
         feats = brain.r[feat_idx].T                                     # (P, n_feat)
@@ -111,19 +114,25 @@ _WORKER: dict = {}
 
 
 def _init_worker(graph: dict, gain: float, W_s: np.ndarray, feat_idx: np.ndarray,
-                 sensory_gain: float, n_substeps: int, train_balls: int, pop: int) -> None:
+                 sensory_gain: float, n_substeps: int, train_balls: int, pop: int,
+                 train_gains: bool = False) -> None:
     brain = BatchedBrain(graph, dt=0.005, gain=gain)
     brain.init_batch(pop)
     _WORKER.update(brain=brain, W_s=W_s, feat_idx=feat_idx, sensory_gain=sensory_gain,
-                   n_substeps=n_substeps, train_balls=train_balls)
+                   n_substeps=n_substeps, train_balls=train_balls, train_gains=train_gains)
 
 
 def _chunk_fitness(policies: np.ndarray, seeds: list[int]) -> np.ndarray:
     if getattr(_WORKER["brain"], "batch", None) != len(policies):
         _WORKER["brain"].init_batch(len(policies))
-    return episode_fitness(_WORKER["brain"], _WORKER["W_s"], policies, seeds,
+    g = None
+    pol = policies
+    if _WORKER.get("train_gains"):
+        n_read = policies.shape[1] - _WORKER["W_s"].shape[0]
+        pol, g = policies[:, :n_read], policies[:, n_read:]
+    return episode_fitness(_WORKER["brain"], _WORKER["W_s"], pol, seeds,
                            _WORKER["feat_idx"], _WORKER["sensory_gain"],
-                           _WORKER["n_substeps"], _WORKER["train_balls"])
+                           _WORKER["n_substeps"], _WORKER["train_balls"], gains=g)
 
 
 def _episode_chunk(task):
@@ -144,7 +153,7 @@ def train(iters: int = 16, pop: int = 64, elites: int = 8, eps: int = 2, seed: i
           workers: int = 0, mu_init: np.ndarray | None = None, sigma_init: float = 0.5,
           out: Path | None = None,
           graph_path: Path | None = None, quiet: bool = False,
-          feat_idx_override: np.ndarray | None = None):
+          feat_idx_override: np.ndarray | None = None, train_gains: bool = False):
     graph = dict(np.load(graph_path or CIRCUIT_PATH, allow_pickle=True))
     brain = BatchedBrain(graph, dt=0.005, gain=gain)
     brain.init_batch(pop)
@@ -155,8 +164,13 @@ def train(iters: int = 16, pop: int = 64, elites: int = 8, eps: int = 2, seed: i
     n_feat = len(feat_idx)
     rng = np.random.default_rng(seed)
     K = n_feat * N_ACTIONS
-    mu = np.zeros(K, np.float32) if mu_init is None else np.asarray(mu_init, np.float32).copy()
-    sigma = np.full(K, 0.5, np.float32) if mu_init is None else np.full(K, float(sigma_init), np.float32)
+    n_sens = len(brain.sensory_idx)
+    if train_gains:
+        mu = (np.concatenate([np.zeros(K, np.float32), np.ones(n_sens, np.float32)])
+              if mu_init is None else np.asarray(mu_init, np.float32).copy())
+    else:
+        mu = np.zeros(K, np.float32) if mu_init is None else np.asarray(mu_init, np.float32).copy()
+    sigma = np.full(len(mu), 0.5, np.float32) if mu_init is None else np.full(len(mu), float(sigma_init), np.float32)
     mu_tail: list[np.ndarray] = []
     tail = max(1, iters // 4)          # average mu over the last iters/4 generations
     t0 = time.time()
@@ -168,18 +182,22 @@ def train(iters: int = 16, pop: int = 64, elites: int = 8, eps: int = 2, seed: i
         ctx = mp.get_context("fork")     # COW: workers share the graph
         pool = ctx.Pool(workers, initializer=_init_worker,
                         initargs=(graph, gain, W_s, feat_idx, sensory_gain,
-                                  n_substeps, train_balls, pop))
+                                  n_substeps, train_balls, pop, train_gains))
     try:
         for gen in range(iters):
-            samples = rng.normal(0, 1, (pop, K)).astype(np.float32) * sigma + mu
+            samples = rng.normal(0, 1, (pop, len(mu))).astype(np.float32) * sigma + mu
             if elitism:
                 samples = np.concatenate([samples, mu[None]])      # current mean competes
             ep_fits = np.zeros((eps, len(samples)))
+            gains = None
+            pol = samples
+            if train_gains:
+                pol, gains = samples[:, :K], samples[:, K:]
             if pool is None:
                 for e in range(eps):
                     seeds = [int(rng.integers(0, 8000)) for _ in range(len(samples))]
-                    ep_fits[e] = episode_fitness(brain, W_s, samples, seeds, feat_idx,
-                                                 sensory_gain, n_substeps, train_balls)
+                    ep_fits[e] = episode_fitness(brain, W_s, pol, seeds, feat_idx,
+                                                 sensory_gain, n_substeps, train_balls, gains=gains)
             else:
                 # episode seeds drawn in the parent in the SAME order as sequential:
                 # results depend only on (config, seed), not on worker count
@@ -211,7 +229,6 @@ def train(iters: int = 16, pop: int = 64, elites: int = 8, eps: int = 2, seed: i
     if out:
         out = Path(out)
         out.mkdir(parents=True, exist_ok=True)
-        np.save(out / "mu.npy", mu)
         np.save(out / "sigma.npy", sigma)
         np.save(out / "feat_idx.npy", feat_idx)
         (out / "history.json").write_text(json.dumps(history, indent=1))
@@ -220,10 +237,14 @@ def train(iters: int = 16, pop: int = 64, elites: int = 8, eps: int = 2, seed: i
              "gain": gain, "dn_topk": dn_topk, "sigma_decay": sigma_decay,
              "sigma_floor": sigma_floor, "train_balls": train_balls,
              "pop": pop, "elites": elites, "eps": eps, "iters": iters, "seed": seed,
-             "n_feat": n_feat, "n_dn": len(brain.dn_idx),
+             "n_feat": n_feat, "n_dn": len(brain.dn_idx), "train_gains": train_gains,
              "n_sensory": len(brain.sensory_idx), "graph": str(graph_path or CIRCUIT_PATH),
              "workers": workers, "device": "cpu(scipy)"}, indent=1))
     mu = np.mean(mu_tail, axis=0).astype(np.float32)   # tail-averaged final policy
+    if out:
+        np.save(out / "mu.npy", mu[:K] if train_gains else mu)
+        if train_gains:
+            np.save(out / "gains.npy", mu[K:])
     return mu, sigma, history
 
 

@@ -27,6 +27,9 @@ def eval_run(brain: BatchedBrain, params: np.ndarray, cfg: dict, seeds=None, bat
                                    cfg.get("sensory_gain", 1.0), cfg.get("n_substeps", 4),
                                    cfg.get("dn_topk"))
     n_feat = len(feat_idx)
+    gains = None
+    if cfg.get("gains_path"):
+        gains = np.load(cfg["gains_path"]).astype(np.float32)   # (n_sens,)
     P = params.reshape(1, N_ACTIONS, n_feat)
     total_reward, catches, n = 0.0, 0, 0
     act_count = np.zeros(3, np.int64)
@@ -40,6 +43,8 @@ def eval_run(brain: BatchedBrain, params: np.ndarray, cfg: dict, seeds=None, bat
         ep_reward = np.zeros(len(chunk))
         while True:
             S = np.maximum(W_s @ obs.T, 0.0) * cfg.get("sensory_gain", 1.0)
+            if gains is not None:
+                S = S * gains[:, None]
             brain.clamp_sensory_batch(S)
             brain.step_batch(cfg.get("n_substeps", 4))
             feats = brain.r[feat_idx].T
