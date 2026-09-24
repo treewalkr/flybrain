@@ -87,6 +87,19 @@ no-bottleneck 291≤300 control and density-preserving projections) all cap at
 ~50% catch from scratch. The residual gap is the frozen linear readout's
 ~0.15 landing-estimate error on ~16% of balls.
 
+## The closure matrix (final)
+
+| family | from-scratch | ladder rung-1 | near-optimum restart |
+|---|---|---|---|
+| readout-only (variance feats) | **+8.42** | **+2.6 ✓ (→+15.17 over 4 rungs)** | below init |
+| MI-features | +8.25 | +0.75 (below alive gate) | below init (augment) |
+| input-gains | +8.21 | −0.71 ✗ | +13.54 < init |
+
+Only the readout family's basin supports the ladder+averaging pipeline that
+produced the champion — a finding about *why* that lineage worked, not just
+that it did. Basin climb-rate is family-specific and not predictable from
+from-scratch equality.
+
 ## Reproduce
 
 ```bash
