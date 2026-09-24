@@ -86,5 +86,13 @@ Caveats:
   alone reaches 46% catch (chance 33%) — the real fly wiring genuinely carries the task;
   the sensory shortcut adds the top end (69% champion)**
 - Closed directions (do not reopen): elitism, cross-seed averaging, feature scaling,
-  circuit shrink, substeps<4, pop shrink, sigma_decay 0.85, dn_topk 512,
-  gain 1.4, sensory_gain, tau 10ms, n_sensory 600, min-fitness, elites 16, iters 60
+  circuit shrink, substeps<4, substeps>4 (run 72: transfer flat +0.04, brain settles
+  within 4 substeps), pop shrink, sigma_decay 0.85, dn_topk 512, zero-padded top-512
+  expansion at the optimum (run 73: both draws below gate), gain 1.4, sensory_gain,
+  tau 10ms, n_sensory 600, min-fitness, elites 16, iters 60, balls-24 episodes
+- DN-only fair fight (run 46): val-selected connectome-only policy = 54.2% catch
+  vs 86.2% full — the sensory skip path adds ~32pts; connectome alone beats chance
+  (33%) by 21pts
+- FINAL STATE: converged at champ_lin (+14.44/86.1%) with champ_lin2 as statistical
+  twin (+14.48/86.2%); val noise floor ±1.1 (48-ep scores); every axis closed;
+  only parked low-EV idea is a fully retuned wide-retina projection (fresh axis)

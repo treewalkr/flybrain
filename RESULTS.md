@@ -1,0 +1,71 @@
+# Results — MaleCNS circuit plays pong-catch
+
+A frozen MaleCNS v1.0 connectome circuit (4,706 neurons: 300 sensory + 1,314
+descending + all 1-hop interneurons between them, induced edges re-normalised)
+drives a leaky rate model. Only a linear readout over brain activity is trained
+(CEM); **the connectome is never modified**.
+
+## Headline
+
+| policy | eval reward | catch rate |
+|---|---|---|
+| chance (random actions) | −6.7 | 33% |
+| connectome only, no sensory skip path (val-selected) | — | 54.2% |
+| **full model — champion (`data/runs/champ_lin`)** | **+14.44** | **86.1%** |
+| statistical twin (`champ_lin2`) | +14.48 | 86.2% |
+| perfect play | +20 | 100% |
+
+Evaluated on 96 frozen seeds (9000–9095), 20 balls each, never seen in training.
+
+**The real fly wiring carries the task**: with the direct sensory→readout shortcut
+removed and the readout restricted to descending-neuron rates, the circuit alone
+reaches 54.2% catch — 21 points above chance. The sensory skip path contributes
+the remaining ~32 points.
+
+## The champion recipe
+
+Found by a 73-experiment autoresearch loop (`.auto/log.jsonl`). Ladder of wins,
+in order of impact:
+
+1. **top-256 DN features** (variance-ranked descending neurons) — +1.7 vs top-128
+2. **48+ CEM generations** (iters 96 pilot protocol, pop 64, elites 10, eps 6)
+3. **champion-restart refinement ladder** (4 rounds: restart CEM at the best mu
+   with sigma 0.10–0.15, fresh training episodes, val-gated) — 68.8% → 84.9%
+4. **lineage averaging** (mean of refinement-ladder mus, weights 0.5/0.3/0.2) —
+   84.9% → 86.1%, and it eliminated the hemifield cold-zone pathology: zone
+   coverage is now uniform (worst zone 0.79, no dead cells)
+
+Training: 12-ball episodes, 4 substeps × 5 ms per decision, 6 workers,
+scipy/numpy core — bit-identical reruns (zero noise floor on the sim itself).
+
+## Measurement honesty
+
+- Validation noise floor is **±1.1 reward** on 48-episode scores (measured on
+  disjoint blocks); gate discipline was audited against it — recent sub-gate
+  margins (round 4, extended averages) were within noise and correctly not kept.
+- `gap` (eval − val) ≈ −0.7 to −1.1: validation slightly over-predicts, no
+  overfitting signature; fresh-never-used val block matches frozen eval.
+- Trajectory (seed) variance across independent trainings is ±2–3 reward; the
+  reported champion is a val-selected point, its twin confirms stability.
+
+## What did not work (closed axes)
+
+Elitism + rank weighting (winner's curse), cross-seed mu ensembling, feature
+standardization, circuit shrink (<3k neurons → stuck-left degenerate policy),
+substeps <4 and >4 (the rate dynamics settle to their input-driven fixed points
+within 4 substeps — transfer to 6 is flat at +0.04), pop 32, sigma_decay 0.85,
+dn_topk 512 from scratch, zero-padded top-512 capacity expansion at the optimum
+(ranks 257–512 carry no climbable signal), brain gain 1.4, sensory gain (linear
+regime — bit-identical), tau 10 ms, retina 32 (encoding dilution), 24-ball
+episodes, coverage/maximin selection (≡ aggregate selection), ensembles beyond
+the lineage average.
+
+## Reproduce
+
+```bash
+./.auto/measure.sh          # protocol dispatcher (config.json "protocol")
+.venv/bin/python flybrain/eval.py data/runs/champ_lin   # champion on frozen eval seeds
+```
+
+Artifacts: `data/runs/champ_lin/` (mu, feat_idx, config). Full experiment log:
+`.auto/log.jsonl`. Methods & constraints: `.auto/prompt.md`.
