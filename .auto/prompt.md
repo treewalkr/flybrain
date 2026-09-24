@@ -98,7 +98,13 @@ Caveats:
   landing-correlation feature selection (runs 77/78: augmentation can't climb from
   champion init; from-scratch MI pool statistically equals variance pool — best
   +8.25/71% vs +8.42/68.8%; the ~0.15 estimate bias is a LINEAR-FAMILY property,
-  not a selection artifact)
+  not a selection artifact),
+  per-channel input gains (runs 79/80: explicitly permitted by 'readout/input-gain
+  only'; relu clipping active 40.8% of DN v<0 so gains genuinely change the
+  computation and CEM uses them (ranges [-1.1,2.7] from scratch); SAME from-scratch
+  ceiling (+8.21/71%) and champion-anchored refinements BELOW init (+13.54 < 15.17) —
+  four families, identical ceilings both regimes; train_gains infra committed b499cee,
+  flag-off bit-identical)
 - Miss-mode diagnosis (.auto/miss_probe.py, .auto/landing_probe.py, .auto/osc_bias_probe.py):
   misses are diffuse — uniform across step-quartiles (86-88%), bounce counts, speeds;
   52% of misses are MARGINAL (landing 0.10-0.15 from paddle vs 0.10 window); on missed
@@ -115,5 +121,7 @@ Caveats:
   stable 232/256 across seed halves) — characterization, NOT opportunity: both
   replacement (from-scratch, run 78) and augmentation (run 77) closed
 - FINAL STATE: converged at champ_lin (+14.44/86.1%) with champ_lin2 as statistical
-  twin (+14.48/86.2%); val noise floor ±1.1 (48-ep scores); every axis closed;
-  only parked low-EV idea is a fully retuned wide-retina projection (fresh axis)
+  twin (+14.48/86.2%); val noise floor ±1.1 (48-ep scores); FOUR trainable families
+  (readout-only, MI-features, MI-augmented, input-gains) share the same from-scratch
+  ceiling (+8.2-8.4) and the same local ceiling (+15.17 unclimbable) — the champion is
+  the optimum of every family the constraints permit
