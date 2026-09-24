@@ -91,10 +91,16 @@ Caveats:
   expansion at the optimum (run 73: both draws below gate), gain 1.4, sensory_gain,
   tau 10ms, n_sensory 600, min-fitness, elites 16, iters 60, balls-24 episodes,
   margin-argmax/hysteresis decoding (run 74: monotone val decay with margin —
-  the 2%-stay bang-bang dithering is FUNCTIONAL, not pathology)
-- Miss-mode diagnosis (run 74 preflight, .auto/miss_probe.py): misses are diffuse —
-  uniform across step-quartiles (86-88%), bounce counts, and speeds; remaining
-  ~13% gap to ceiling is the linear readout's uniform tracking-precision limit
+  the 2%-stay bang-bang dithering is FUNCTIONAL, not pathology),
+  retina 24/32 (runs 75/44/45/55: 10 fresh draws across widths cap ~50% from
+  scratch; NOT the 387>300 squeeze — retina-24 fits 291<=300 — and NOT density;
+  something intrinsic to wide retinas breaks from-scratch CEM)
+- Miss-mode diagnosis (.auto/miss_probe.py, .auto/landing_probe.py): misses are
+  diffuse — uniform across step-quartiles (86-88%), bounce counts, and speeds;
+  52% of misses are MARGINAL (landing 0.10-0.15 from paddle vs 0.10 window) and
+  the policy reaches within 0.05 of the true landing for 91% of balls — a
+  precision ceiling, not a directional error; input-precision fix (wide retina)
+  cannot be trained from scratch to exploit it (see retina closures)
 - DN-only fair fight (run 46): val-selected connectome-only policy = 54.2% catch
   vs 86.2% full — the sensory skip path adds ~32pts; connectome alone beats chance
   (33%) by 21pts

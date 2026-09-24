@@ -64,11 +64,17 @@ the lineage average, margin-argmax decoding.
 
 Misses (13%) are **diffuse**: uniform across decision-step quartiles (86–88%
 catch), wall-bounce counts (86%/86%/96% for 0/1/2 bounces), and ball speeds.
-No regime to target. The policy's signature behaviour is **functional bang-bang
-control** — it holds still on only 2% of steps, switching left↔right every ~2.8
-steps; suppressing the dither via margin decoding degrades performance
-monotonically. The residual gap to 100% is the linear readout's uniform tracking
-precision, not any identifiable pathology.
+No regime to target. Exact landing reconstruction shows **52% of misses are
+marginal** (0.10–0.15 from the paddle vs the 0.10 catch window) and the policy
+reaches within 0.05 of the true landing spot for 91% of balls — a *precision*
+ceiling, not a directional error. The policy's signature behaviour is
+**functional bang-bang control** — it holds still on only 2% of steps,
+switching left↔right every ~2.8 steps; suppressing the dither via margin
+decoding degrades performance monotonically. Fixing the precision via a wider
+retina fails at training time: 10 fresh draws across retina-24/32 (incl. the
+no-bottleneck 291≤300 control and density-preserving projections) all cap at
+~50% catch from scratch. The residual gap is the linear-readout + retina-16
+system's uniform tracking precision.
 
 ## Reproduce
 
