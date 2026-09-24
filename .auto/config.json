@@ -1,5 +1,5 @@
 {
- "protocol": "milad",
+ "protocol": "h2probe",
  "iters": 96,
  "pop": 64,
  "elites": 10,

@@ -86,7 +86,9 @@ Caveats:
   alone reaches 46% catch (chance 33%) — the real fly wiring genuinely carries the task;
   the sensory shortcut adds the top end (69% champion)**
 - Closed directions (do not reopen): elitism, cross-seed averaging, feature scaling,
-  circuit shrink, substeps<4, substeps>4 (run 72: transfer flat +0.04, brain settles
+  circuit shrink, circuit 2-hop (run 83: identical DN landing-info, transfer
+  collapse to 14.8%, 21x compute — 1-hop is informationally sufficient),
+  substeps<4, substeps>4 (run 72: transfer flat +0.04, brain settles
   within 4 substeps), pop shrink, sigma_decay 0.85, dn_topk 512, zero-padded top-512
   expansion at the optimum (run 73: both draws below gate), gain 1.4, sensory_gain,
   tau 10ms, n_sensory 600, min-fitness, elites 16, iters 60, balls-24 episodes,
