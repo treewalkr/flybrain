@@ -91,6 +91,9 @@ Caveats:
   projection lottery (run 84: W_s seed moves DN info 0.150-0.263 but info-rich
   seed 3 [+3.12/-1.08] and info-poor seed 5 [+1.67/+1.88] train in the same band —
   no info→performance gradient; proj_seed param added, default bit-identical),
+  per-class tau (run 85: central/optic 40ms leave decisions BIT-IDENTICAL,
+  dn-40 −0.17 — the champion's argmax margins exceed any temporal-kernel
+  perturbation; dynamics axis fully swept)
   substeps<4, substeps>4 (run 72: transfer flat +0.04, brain settles
   within 4 substeps), pop shrink, sigma_decay 0.85, dn_topk 512, zero-padded top-512
   expansion at the optimum (run 73: both draws below gate), gain 1.4, sensory_gain,

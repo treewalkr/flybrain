@@ -80,6 +80,9 @@ fi
 if [ "$PROTOCOL" = "proj" ]; then
   exec .venv/bin/python .auto/proj_pool.py
 fi
+if [ "$PROTOCOL" = "tau" ]; then
+  exec .venv/bin/python .auto/tau_probe.py
+fi
 if [ "$PROTOCOL" = "maximin" ]; then
   exec .venv/bin/python .auto/select_maximin.py
 fi

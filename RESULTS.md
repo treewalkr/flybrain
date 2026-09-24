@@ -74,7 +74,11 @@ extraction is informationally sufficient for this task),
 sensory-projection lottery (the W_s seed moves readout-visible landing
 information across 0.150–0.263, some draws leaving obs channels unread — yet
 info-rich and info-poor draws train in the same band, +3.1/+1.9 bests; no
-information→performance gradient anywhere in the stack).
+information→performance gradient anywhere in the stack),
+per-superclass time constants (doubling central or optic tau to 40 ms leaves
+the champion's decisions **bit-identical** — not one argmax flips; only
+slowing the readout-visible DN rates moves the score, by −0.17 — the policy
+operates on a robust attractor insensitive to temporal-kernel detail).
 
 ## Failure-mode analysis (final)
 
