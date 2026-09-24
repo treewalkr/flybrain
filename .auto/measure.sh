@@ -56,6 +56,12 @@ fi
 if [ "$PROTOCOL" = "oscbias" ]; then
   exec .venv/bin/python .auto/osc_bias_probe.py
 fi
+if [ "$PROTOCOL" = "mi" ]; then
+  exec .venv/bin/python .auto/mi_pool.py
+fi
+if [ "$PROTOCOL" = "miscratch" ]; then
+  exec .venv/bin/python .auto/mi_scratch_pool.py
+fi
 if [ "$PROTOCOL" = "maximin" ]; then
   exec .venv/bin/python .auto/select_maximin.py
 fi

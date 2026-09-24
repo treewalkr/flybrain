@@ -94,7 +94,11 @@ Caveats:
   the 2%-stay bang-bang dithering is FUNCTIONAL, not pathology),
   retina 24/32 (runs 75/44/45/55: 10 fresh draws across widths cap ~50% from
   scratch; NOT the 387>300 squeeze — retina-24 fits 291<=300 — and NOT density;
-  something intrinsic to wide retinas breaks from-scratch CEM)
+  something intrinsic to wide retinas breaks from-scratch CEM),
+  landing-correlation feature selection (runs 77/78: augmentation can't climb from
+  champion init; from-scratch MI pool statistically equals variance pool — best
+  +8.25/71% vs +8.42/68.8%; the ~0.15 estimate bias is a LINEAR-FAMILY property,
+  not a selection artifact)
 - Miss-mode diagnosis (.auto/miss_probe.py, .auto/landing_probe.py, .auto/osc_bias_probe.py):
   misses are diffuse — uniform across step-quartiles (86-88%), bounce counts, speeds;
   52% of misses are MARGINAL (landing 0.10-0.15 from paddle vs 0.10 window); on missed
@@ -106,6 +110,10 @@ Caveats:
 - DN-only fair fight (run 46): val-selected connectome-only policy = 54.2% catch
   vs 86.2% full — the sensory skip path adds ~32pts; connectome alone beats chance
   (33%) by 21pts
+- DN information audit (.auto/dn_info_probe.py): variance-top-256 contains only
+  58/256 of the top landing encoders (mean |r_land| 0.169 vs 0.54 max; ranking
+  stable 232/256 across seed halves) — characterization, NOT opportunity: both
+  replacement (from-scratch, run 78) and augmentation (run 77) closed
 - FINAL STATE: converged at champ_lin (+14.44/86.1%) with champ_lin2 as statistical
   twin (+14.48/86.2%); val noise floor ±1.1 (48-ep scores); every axis closed;
   only parked low-EV idea is a fully retuned wide-retina projection (fresh axis)
