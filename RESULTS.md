@@ -70,7 +70,11 @@ champion),
 2-hop circuit extraction (39,889 neurons: DN landing-information profile
 identical to the 1-hop circuit's — top-256 |r| 0.229 vs 0.224 — champion
 policy collapses on it below chance, and it costs 21× the compute; the 1-hop
-extraction is informationally sufficient for this task).
+extraction is informationally sufficient for this task),
+sensory-projection lottery (the W_s seed moves readout-visible landing
+information across 0.150–0.263, some draws leaving obs channels unread — yet
+info-rich and info-poor draws train in the same band, +3.1/+1.9 bests; no
+information→performance gradient anywhere in the stack).
 
 ## Failure-mode analysis (final)
 
