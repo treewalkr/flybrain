@@ -105,8 +105,10 @@ Caveats:
   ceiling (+8.21/71%), champion-anchored refinements BELOW init (+13.54 < 15.17),
   and ladder rung-1 DEGRADES (-0.71 vs rung-0; readout family's rung-1 climbed +2.6) —
   refinement-hostile basin; train_gains infra committed b499cee, flag-off bit-identical).
-  CLOSURE MATRIX COMPLETE: family x {from-scratch, ladder, near-optimum} all tested;
-  only the readout family's basin supports the ladder protocol
+  CLOSURE MATRIX COMPLETE AND SYMMETRIC: 3 families x 3 regimes (from-scratch /
+  ladder rung-1 / near-optimum restart) all tested; climb-rate ordering readout
+  +2.6 > MI +0.75 (below pre-registered alive gate, stopped) > gain -0.71 - only
+  the readout family's basin supports the ladder protocol that built the champion
 - Miss-mode diagnosis (.auto/miss_probe.py, .auto/landing_probe.py, .auto/osc_bias_probe.py):
   misses are diffuse — uniform across step-quartiles (86-88%), bounce counts, speeds;
   52% of misses are MARGINAL (landing 0.10-0.15 from paddle vs 0.10 window); on missed
