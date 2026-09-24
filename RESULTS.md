@@ -66,7 +66,11 @@ so gains genuinely reshape the computation, and CEM actively uses them; yet
 from-scratch (+8.21/71%), ladder (rung-1 degrades −0.71), and champion-anchored
 (+13.54 < +15.17) all fail to beat the readout-only family — only the readout
 family's basin supports the restart-refinement ladder that produced the
-champion).
+champion),
+2-hop circuit extraction (39,889 neurons: DN landing-information profile
+identical to the 1-hop circuit's — top-256 |r| 0.229 vs 0.224 — champion
+policy collapses on it below chance, and it costs 21× the compute; the 1-hop
+extraction is informationally sufficient for this task).
 
 ## Failure-mode analysis (final)
 
