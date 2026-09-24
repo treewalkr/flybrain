@@ -153,11 +153,12 @@ def train(iters: int = 16, pop: int = 64, elites: int = 8, eps: int = 2, seed: i
           workers: int = 0, mu_init: np.ndarray | None = None, sigma_init: float = 0.5,
           out: Path | None = None,
           graph_path: Path | None = None, quiet: bool = False,
-          feat_idx_override: np.ndarray | None = None, train_gains: bool = False):
+          feat_idx_override: np.ndarray | None = None, train_gains: bool = False,
+          proj_seed: int = 7):
     graph = dict(np.load(graph_path or CIRCUIT_PATH, allow_pickle=True))
     brain = BatchedBrain(graph, dt=0.005, gain=gain)
     brain.init_batch(pop)
-    W_s = make_sensory_projection(len(brain.sensory_idx), OBS_DIM)
+    W_s = make_sensory_projection(len(brain.sensory_idx), OBS_DIM, seed=proj_seed)
     feat_idx = (np.asarray(feat_idx_override, np.int64) if feat_idx_override is not None
                 else select_features(brain, W_s, use_sensory, sensory_gain, n_substeps, dn_topk))
     brain.init_batch(pop + 1 if elitism else pop)
