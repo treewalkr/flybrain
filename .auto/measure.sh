@@ -50,6 +50,9 @@ fi
 if [ "$PROTOCOL" = "hyst" ]; then
   exec .venv/bin/python .auto/hyst_pool.py
 fi
+if [ "$PROTOCOL" = "pilot24" ]; then
+  exec .venv/bin/python .auto/pilot24_pool.py
+fi
 if [ "$PROTOCOL" = "maximin" ]; then
   exec .venv/bin/python .auto/select_maximin.py
 fi
