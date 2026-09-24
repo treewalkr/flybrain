@@ -99,12 +99,14 @@ Caveats:
   champion init; from-scratch MI pool statistically equals variance pool — best
   +8.25/71% vs +8.42/68.8%; the ~0.15 estimate bias is a LINEAR-FAMILY property,
   not a selection artifact),
-  per-channel input gains (runs 79/80: explicitly permitted by 'readout/input-gain
+  per-channel input gains (runs 79/80/81: explicitly permitted by 'readout/input-gain
   only'; relu clipping active 40.8% of DN v<0 so gains genuinely change the
   computation and CEM uses them (ranges [-1.1,2.7] from scratch); SAME from-scratch
-  ceiling (+8.21/71%) and champion-anchored refinements BELOW init (+13.54 < 15.17) —
-  four families, identical ceilings both regimes; train_gains infra committed b499cee,
-  flag-off bit-identical)
+  ceiling (+8.21/71%), champion-anchored refinements BELOW init (+13.54 < 15.17),
+  and ladder rung-1 DEGRADES (-0.71 vs rung-0; readout family's rung-1 climbed +2.6) —
+  refinement-hostile basin; train_gains infra committed b499cee, flag-off bit-identical).
+  CLOSURE MATRIX COMPLETE: family x {from-scratch, ladder, near-optimum} all tested;
+  only the readout family's basin supports the ladder protocol
 - Miss-mode diagnosis (.auto/miss_probe.py, .auto/landing_probe.py, .auto/osc_bias_probe.py):
   misses are diffuse — uniform across step-quartiles (86-88%), bounce counts, speeds;
   52% of misses are MARGINAL (landing 0.10-0.15 from paddle vs 0.10 window); on missed

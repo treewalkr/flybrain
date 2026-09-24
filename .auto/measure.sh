@@ -68,6 +68,9 @@ fi
 if [ "$PROTOCOL" = "gainref" ]; then
   exec .venv/bin/python .auto/gainref_pool.py
 fi
+if [ "$PROTOCOL" = "gainlad" ]; then
+  exec .venv/bin/python .auto/gainlad_pool.py
+fi
 if [ "$PROTOCOL" = "maximin" ]; then
   exec .venv/bin/python .auto/select_maximin.py
 fi
