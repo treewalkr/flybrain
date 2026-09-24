@@ -58,7 +58,17 @@ dn_topk 512 from scratch, zero-padded top-512 capacity expansion at the optimum
 (ranks 257–512 carry no climbable signal), brain gain 1.4, sensory gain (linear
 regime — bit-identical), tau 10 ms, retina 32 (encoding dilution), 24-ball
 episodes, coverage/maximin selection (≡ aggregate selection), ensembles beyond
-the lineage average.
+the lineage average, margin-argmax decoding.
+
+## Failure-mode analysis (final)
+
+Misses (13%) are **diffuse**: uniform across decision-step quartiles (86–88%
+catch), wall-bounce counts (86%/86%/96% for 0/1/2 bounces), and ball speeds.
+No regime to target. The policy's signature behaviour is **functional bang-bang
+control** — it holds still on only 2% of steps, switching left↔right every ~2.8
+steps; suppressing the dither via margin decoding degrades performance
+monotonically. The residual gap to 100% is the linear readout's uniform tracking
+precision, not any identifiable pathology.
 
 ## Reproduce
 

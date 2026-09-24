@@ -89,7 +89,12 @@ Caveats:
   circuit shrink, substeps<4, substeps>4 (run 72: transfer flat +0.04, brain settles
   within 4 substeps), pop shrink, sigma_decay 0.85, dn_topk 512, zero-padded top-512
   expansion at the optimum (run 73: both draws below gate), gain 1.4, sensory_gain,
-  tau 10ms, n_sensory 600, min-fitness, elites 16, iters 60, balls-24 episodes
+  tau 10ms, n_sensory 600, min-fitness, elites 16, iters 60, balls-24 episodes,
+  margin-argmax/hysteresis decoding (run 74: monotone val decay with margin —
+  the 2%-stay bang-bang dithering is FUNCTIONAL, not pathology)
+- Miss-mode diagnosis (run 74 preflight, .auto/miss_probe.py): misses are diffuse —
+  uniform across step-quartiles (86-88%), bounce counts, and speeds; remaining
+  ~13% gap to ceiling is the linear readout's uniform tracking-precision limit
 - DN-only fair fight (run 46): val-selected connectome-only policy = 54.2% catch
   vs 86.2% full — the sensory skip path adds ~32pts; connectome alone beats chance
   (33%) by 21pts

@@ -1,5 +1,5 @@
 {
- "protocol": "dn512",
+ "protocol": "hyst",
  "iters": 96,
  "pop": 64,
  "elites": 10,
