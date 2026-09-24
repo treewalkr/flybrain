@@ -95,12 +95,14 @@ Caveats:
   retina 24/32 (runs 75/44/45/55: 10 fresh draws across widths cap ~50% from
   scratch; NOT the 387>300 squeeze — retina-24 fits 291<=300 — and NOT density;
   something intrinsic to wide retinas breaks from-scratch CEM)
-- Miss-mode diagnosis (.auto/miss_probe.py, .auto/landing_probe.py): misses are
-  diffuse — uniform across step-quartiles (86-88%), bounce counts, and speeds;
-  52% of misses are MARGINAL (landing 0.10-0.15 from paddle vs 0.10 window) and
-  the policy reaches within 0.05 of the true landing for 91% of balls — a
-  precision ceiling, not a directional error; input-precision fix (wide retina)
-  cannot be trained from scratch to exploit it (see retina closures)
+- Miss-mode diagnosis (.auto/miss_probe.py, .auto/landing_probe.py, .auto/osc_bias_probe.py):
+  misses are diffuse — uniform across step-quartiles (86-88%), bounce counts, speeds;
+  52% of misses are MARGINAL (landing 0.10-0.15 from paddle vs 0.10 window); on missed
+  balls the paddle's 10-step MEDIAN position is 0.156 off the true landing (only 6/156
+  within 0.05) → ESTIMATE BIAS, not oscillation phase: the readout settles at a wrong
+  target. Action-feedback/hysteresis mechanisms are dead; finer input untrainable (see
+  retina closures). The ~0.15 target error on ~16% of balls is the frozen linear
+  readout's estimate precision — final attribution
 - DN-only fair fight (run 46): val-selected connectome-only policy = 54.2% catch
   vs 86.2% full — the sensory skip path adds ~32pts; connectome alone beats chance
   (33%) by 21pts
