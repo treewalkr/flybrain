@@ -88,6 +88,9 @@ Caveats:
 - Closed directions (do not reopen): elitism, cross-seed averaging, feature scaling,
   circuit shrink, circuit 2-hop (run 83: identical DN landing-info, transfer
   collapse to 14.8%, 21x compute — 1-hop is informationally sufficient),
+  projection lottery (run 84: W_s seed moves DN info 0.150-0.263 but info-rich
+  seed 3 [+3.12/-1.08] and info-poor seed 5 [+1.67/+1.88] train in the same band —
+  no info→performance gradient; proj_seed param added, default bit-identical),
   substeps<4, substeps>4 (run 72: transfer flat +0.04, brain settles
   within 4 substeps), pop shrink, sigma_decay 0.85, dn_topk 512, zero-padded top-512
   expansion at the optimum (run 73: both draws below gate), gain 1.4, sensory_gain,

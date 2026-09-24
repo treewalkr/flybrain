@@ -1,5 +1,5 @@
 {
- "protocol": "h2probe",
+ "protocol": "proj",
  "iters": 96,
  "pop": 64,
  "elites": 10,
