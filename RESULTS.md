@@ -58,7 +58,9 @@ dn_topk 512 from scratch, zero-padded top-512 capacity expansion at the optimum
 (ranks 257–512 carry no climbable signal), brain gain 1.4, sensory gain (linear
 regime — bit-identical), tau 10 ms, retina 32 (encoding dilution), 24-ball
 episodes, coverage/maximin selection (≡ aggregate selection), ensembles beyond
-the lineage average, margin-argmax decoding.
+the lineage average, margin-argmax decoding, landing-correlation feature
+selection (augmentation and from-scratch replacement both fail: the criterion
+is immaterial, from-scratch MI +8.25/71% vs variance +8.42/68.8%).
 
 ## Failure-mode analysis (final)
 
