@@ -63,8 +63,10 @@ selection (augmentation and from-scratch replacement both fail: the criterion
 is immaterial, from-scratch MI +8.25/71% vs variance +8.42/68.8%),
 per-channel input gains (relu clipping is active — 40.8% of DN voltages clip —
 so gains genuinely reshape the computation, and CEM actively uses them; yet
-from-scratch (+8.21/71%) and champion-anchored (+13.54 < +15.17) ceilings match
-the readout-only family exactly).
+from-scratch (+8.21/71%), ladder (rung-1 degrades −0.71), and champion-anchored
+(+13.54 < +15.17) all fail to beat the readout-only family — only the readout
+family's basin supports the restart-refinement ladder that produced the
+champion).
 
 ## Failure-mode analysis (final)
 

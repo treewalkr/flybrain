@@ -1,5 +1,5 @@
 {
- "protocol": "gainref",
+ "protocol": "gainlad",
  "iters": 96,
  "pop": 64,
  "elites": 10,
