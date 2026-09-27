@@ -1,9 +1,28 @@
-data/
+# python
 __pycache__/
-*.pyc
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# environment
 .venv/
-*.mp4
-.DS_Store
+.env
+
+# project
+data/
 ref-projects/
+*.mp4
 .auto/log.jsonl
 .auto/ideas.md
+
+# os / editor
+.DS_Store
+.vscode/
+.idea/
