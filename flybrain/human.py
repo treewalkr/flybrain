@@ -69,8 +69,13 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seed", type=int, default=1234)
     ap.add_argument("--brain", action="store_true", help="race the trained brain on identical balls")
-    ap.add_argument("--run", default="data/runs/best", help="trained run dir for --brain")
+    ap.add_argument("--run", default=None, help="trained run dir for --brain (default: strongest artifact)")
     args = ap.parse_args()
+    if args.run is None:
+        for cand in ("data/runs/champ_lin", "data/runs/champ_lin2", "data/runs/best"):
+            if Path(cand + "/mu.npy").exists():
+                args.run = cand
+                break
 
     you = CatchEnv(args.seed)
     fly = CatchEnv(args.seed)
